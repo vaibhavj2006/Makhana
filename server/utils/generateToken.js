@@ -8,12 +8,13 @@ const generateToken = (userId, role) =>
 const sendTokenCookie = (res, userId, role) => {
   const token = generateToken(userId, role);
   const cookieName = process.env.COOKIE_NAME || 'mk_token';
+  const isProduction = process.env.NODE_ENV === 'production';
 
   res.cookie(cookieName, token, {
-    httpOnly: true, // not readable by JS in the browser -> mitigates XSS token theft
-    secure: process.env.SECURE_COOKIES === 'true', // set true once served over HTTPS
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    httpOnly: true, 
+    secure: isProduction, 
+    sameSite: isProduction ? 'none' : 'lax', 
+    maxAge: 7 * 24 * 60 * 60 * 1000 
   });
 
   return token;
