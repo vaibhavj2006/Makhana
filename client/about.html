@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About — Pond & Puff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html" class="active">About</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <span id="navAuthSlot"></span>
+      <button class="icon-btn" id="cartOpenBtn" aria-label="Open cart">🛍️<span class="cart-count" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero ripple-bg" style="padding:70px 0;">
+  <div class="container">
+    <p class="eyebrow" style="color:var(--marigold);">Who's behind this</p>
+    <h1 style="font-size:clamp(2.2rem,4vw,3.4rem); color:var(--paper); max-width:640px;">A snack brand built around one weird, wonderful seed.</h1>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <p class="eyebrow">How it started</p>
+      <h2 style="font-size:2rem; margin-bottom:16px;">A kitchen staple nobody outside India had heard of.</h2>
+      <p>Makhana has been roasted in Indian kitchens for generations — used in curries, desserts, and fasting-day meals. But on supermarket shelves, it was either unbranded and inconsistent, or dressed up as a "superfood" at ten times the price it should cost.</p>
+      <p>Pond &amp; Puff started with a simple bet: treat fox nuts like a real snack brand would — consistent roasting, honest flavors, and packaging that doesn't feel like a lecture on wellness.</p>
+    </div>
+    <div class="split-media">
+      <img src="https://images.unsplash.com/photo-1607920591413-4ec007e70023?w=800" alt="Bags of roasted makhana ready for packing" />
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--cream);">
+  <div class="container split reverse">
+    <div>
+      <p class="eyebrow">What we won't do</p>
+      <h2 style="font-size:2rem; margin-bottom:16px;">No filler, no vague sourcing, no false "healthy" labels.</h2>
+      <p>We list every ingredient because there usually aren't many. We roast instead of fry because that's genuinely how makhana is best made — not because it sounds good on a label. And we don't call ourselves a superfood company, because we're a snack company that happens to sell something good for you.</p>
+      <a href="sourcing.html" class="btn btn-secondary">See our sourcing process</a>
+    </div>
+    <div class="split-media">
+      <img src="https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=800" alt="Close up of roasted fox nuts" />
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">What we stand for</p><h2>Three things we don't compromise on</h2></div></div>
+    <div class="value-grid">
+      <div class="value-card"><div class="icon-dot">🌱</div><h4>Real ingredients</h4><p>If we can't pronounce it or explain why it's there, it's not going in the bag.</p></div>
+      <div class="value-card"><div class="icon-dot">🧑‍🌾</div><h4>Fair to farmers</h4><p>We pay pond farmers directly and consistently, not just when demand spikes.</p></div>
+      <div class="value-card"><div class="icon-dot">📦</div><h4>No greenwashing</h4><p>Recyclable packaging because it works, not because it looks good in a press release.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer" id="footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/common.js"></script>
+<script src="js/footer.js"></script>
+</body>
+</html>

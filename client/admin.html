@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — Pond & Puff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <span id="navAuthSlot"></span>
+      <button class="icon-btn" id="cartOpenBtn" aria-label="Open cart">🛍️<span class="cart-count" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Shown to anyone who isn't an admin -->
+<div class="admin-guard" id="guardView" style="display:none;">
+  <h2 style="margin-bottom:12px;">This page is for shop admins only</h2>
+  <p style="margin-bottom:20px;">Log in with an admin account to manage products and orders.</p>
+  <a href="profile.html" class="btn btn-primary">Go to login</a>
+</div>
+
+<section class="section" id="adminView" style="display:none; padding-top:40px;">
+  <div class="container">
+    <div class="admin-toolbar">
+      <div>
+        <p class="eyebrow">Shop admin</p>
+        <h2 style="font-size:1.9rem;">Dashboard <span class="badge-role">ADMIN</span></h2>
+      </div>
+      <button class="btn btn-primary btn-sm" id="newProductBtn">+ New product</button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-tab="products">Products</button>
+      <button class="admin-tab-btn" data-tab="orders">Orders</button>
+    </div>
+
+    <div id="admin-tab-products">
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr><th></th><th>Name</th><th>Category</th><th>Flavor</th><th>Variants</th><th>Rating</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <tr><td colspan="8">Loading products…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="admin-tab-orders" style="display:none;">
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Placed</th><th>Status</th></tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr><td colspan="6">Loading orders…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Product create/edit modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 class="display" id="productModalTitle" style="font-size:1.3rem;">New product</h3>
+      <button class="icon-btn" onclick="closeProductModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="form-msg error" id="productFormMsg"></div>
+    <form id="productForm">
+      <input type="hidden" id="p_id" />
+      <div class="form-row">
+        <div class="form-group"><label for="p_name">Name</label><input id="p_name" required /></div>
+        <div class="form-group"><label for="p_slug">URL slug</label><input id="p_slug" required placeholder="e.g. roasted-salted-makhana" /></div>
+      </div>
+      <div class="form-group"><label for="p_tagline">Tagline</label><input id="p_tagline" maxlength="140" /></div>
+      <div class="form-group"><label for="p_description">Description</label><textarea id="p_description" rows="3" required></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label for="p_flavor">Flavor</label><input id="p_flavor" required /></div>
+        <div class="form-group">
+          <label for="p_category">Category</label>
+          <select id="p_category">
+            <option value="classic">Classic</option>
+            <option value="flavored">Flavored</option>
+            <option value="gift-box">Gift box</option>
+            <option value="bulk">Bulk</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label for="p_images">Image URLs (comma-separated)</label><input id="p_images" required placeholder="https://... , https://..." /></div>
+      <div class="form-group"><label for="p_tags">Tags (comma-separated)</label><input id="p_tags" placeholder="bestseller, vegan, gluten-free" /></div>
+
+      <div class="form-group">
+        <label>Variants (size / price / stock)</label>
+        <div id="variantRows"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addVariantRow()">+ Add size</button>
+      </div>
+
+      <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="p_featured" style="width:auto;" />
+        <label for="p_featured" style="margin:0;">Show on homepage as featured</label>
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:10px;">Save product</button>
+    </form>
+  </div>
+</div>
+
+<footer class="site-footer" id="footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/common.js"></script>
+<script src="js/footer.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

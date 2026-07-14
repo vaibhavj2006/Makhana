@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pond & Puff — Real Fox Nut Snacks, Roasted Not Fried</title>
+<meta name="description" content="Hand-picked makhana (fox nuts) from lotus ponds in Bihar, roasted in small batches. Shop classic, flavored, and gift-box makhana." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="active">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <span id="navAuthSlot"></span>
+      <button class="icon-btn" id="cartOpenBtn" aria-label="Open cart">🛍️<span class="cart-count" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero ripple-bg">
+  <div class="container hero-inner">
+    <div>
+      <p class="eyebrow" style="color:var(--marigold);">Fox nuts, done right</p>
+      <h1>Snack straight <span class="accent">from the pond</span> to your pantry.</h1>
+      <p class="lead">Makhana, roasted in small batches, sourced directly from the wetland farms of Bihar. No frying, no nonsense — just the crunch you didn't know you were missing.</p>
+      <div class="hero-actions">
+        <a href="shop.html" class="btn btn-primary">Shop the range</a>
+        <a href="sourcing.html" class="btn btn-ghost">See where it comes from</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>100%</b><span>Hand-picked seeds</span></div>
+        <div class="hero-stat"><b>0g</b><span>Trans fat, ever</span></div>
+        <div class="hero-stat"><b>6</b><span>Flavors &amp; counting</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="https://images.unsplash.com/photo-1599490659213-e0b3ecc63e37?w=900" alt="Bowl of roasted makhana fox nuts" />
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Fan favorites</p>
+        <h2>Start with these</h2>
+      </div>
+      <a href="shop.html" class="btn btn-outline btn-sm">View full shop</a>
+    </div>
+    <div class="product-grid" id="featuredGrid">
+      <p>Loading products…</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--cream); padding:70px 0;">
+  <div class="container">
+    <div class="section-head" style="margin-bottom:20px;">
+      <div><p class="eyebrow">Why makhana</p><h2>Snack heavier on nutrition, lighter on regret</h2></div>
+    </div>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="icon-dot">🌾</div>
+        <h4>Actually filling</h4>
+        <p>High in protein and fibre, low in fat — makhana keeps you full without the 4pm crash.</p>
+      </div>
+      <div class="value-card">
+        <div class="icon-dot">🔥</div>
+        <h4>Roasted, never fried</h4>
+        <p>Every batch is dry-roasted, not deep fried, so you get the crunch without the oil.</p>
+      </div>
+      <div class="value-card">
+        <div class="icon-dot">🤝</div>
+        <h4>Farmer-direct</h4>
+        <p>We buy straight from pond farmers in Bihar's Mithila region — no middlemen taking the margin.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <p class="eyebrow">Our story, short version</p>
+      <h2 style="font-size:2.2rem; margin-bottom:16px;">We just wanted a snack that didn't lie to us.</h2>
+      <p>Every "healthy" snack aisle is the same three ingredients rearranged. Pond &amp; Puff started because fox nuts — a staple in Indian kitchens for centuries — deserved better packaging, better flavors, and a lot more attention outside India.</p>
+      <a href="about.html" class="btn btn-secondary">Read the full story</a>
+    </div>
+    <div class="split-media">
+      <img src="https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=800" alt="Makhana being roasted in a kadhai" />
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer" id="footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/common.js"></script>
+<script src="js/footer.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

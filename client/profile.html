@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Account — Pond & Puff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="profile.html" class="active">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <span id="navAuthSlot"></span>
+      <button class="icon-btn" id="cartOpenBtn" aria-label="Open cart">🛍️<span class="cart-count" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== Logged-out view: login / register ===== -->
+<section class="section" id="authSection">
+  <div class="container auth-shell">
+    <div class="card-panel">
+      <div id="googleSignInDiv" style="display:flex; justify-content:center; margin-bottom:16px;"></div>
+      <div id="googleDivider" style="display:none; align-items:center; gap:12px; margin-bottom:20px; color:var(--ink-soft); font-size:0.82rem;">
+        <div style="flex:1; height:1px; background:var(--line);"></div>
+        <span>or use email</span>
+        <div style="flex:1; height:1px; background:var(--line);"></div>
+      </div>
+
+      <div class="tab-switch">
+        <button id="tabLogin" class="active">Log in</button>
+        <button id="tabRegister">Sign up</button>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-msg error" id="loginMsg"></div>
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required minlength="8" />
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Log in</button>
+      </form>
+
+      <form id="registerForm" style="display:none;">
+        <div class="form-msg error" id="registerMsg"></div>
+        <div class="form-group">
+          <label for="regName">Full name</label>
+          <input type="text" id="regName" required />
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" required />
+        </div>
+        <div class="form-group">
+          <label for="regPhone">Phone</label>
+          <input type="tel" id="regPhone" required />
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" required minlength="8" />
+          <div style="font-size:0.78rem; color:var(--ink-soft); margin-top:4px;">At least 8 characters.</div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Create account</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Logged-in view: dashboard ===== -->
+<section class="section" id="dashSection" style="display:none;">
+  <div class="container">
+    <div class="section-head">
+      <div><p class="eyebrow">My account</p><h2 id="welcomeName">Welcome back</h2></div>
+      <button class="btn btn-outline btn-sm" id="logoutBtn">Log out</button>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-nav">
+        <div class="dash-nav-item active" data-tab="orders">📦 Orders</div>
+        <div class="dash-nav-item" data-tab="addresses">📍 Addresses</div>
+        <div class="dash-nav-item" data-tab="account">🙍 Account details</div>
+      </div>
+
+      <div>
+        <div id="tab-orders" class="dash-tab">
+          <div id="ordersList"><p>Loading your orders…</p></div>
+        </div>
+
+        <div id="tab-addresses" class="dash-tab" style="display:none;">
+          <div class="card-panel" style="margin-bottom:20px;">
+            <h3 style="font-size:1.1rem; margin-bottom:16px;">Add a new address</h3>
+            <form id="addressForm">
+              <div class="form-group"><label for="addr_label">Label</label><input id="addr_label" placeholder="Home, Work, etc." /></div>
+              <div class="form-group"><label for="addr_line1">Address line 1</label><input id="addr_line1" required /></div>
+              <div class="form-group"><label for="addr_line2">Address line 2</label><input id="addr_line2" /></div>
+              <div class="form-row">
+                <div class="form-group"><label for="addr_city">City</label><input id="addr_city" required /></div>
+                <div class="form-group"><label for="addr_state">State</label><input id="addr_state" required /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="addr_pincode">Pincode</label><input id="addr_pincode" required /></div>
+                <div class="form-group"><label for="addr_phone">Phone</label><input id="addr_phone" required /></div>
+              </div>
+              <button class="btn btn-secondary" type="submit">Save address</button>
+            </form>
+          </div>
+          <div id="addressesList"></div>
+        </div>
+
+        <div id="tab-account" class="dash-tab" style="display:none;">
+          <div class="card-panel" style="margin-bottom:20px;">
+            <h3 style="font-size:1.1rem; margin-bottom:16px;">Profile details</h3>
+            <form id="accountForm">
+              <div class="form-msg success" id="accountMsg"></div>
+              <div class="form-group"><label for="acc_name">Full name</label><input id="acc_name" required /></div>
+              <div class="form-group"><label for="acc_phone">Phone</label><input id="acc_phone" /></div>
+              <button class="btn btn-secondary" type="submit">Save changes</button>
+            </form>
+          </div>
+          <div class="card-panel">
+            <h3 style="font-size:1.1rem; margin-bottom:16px;">Change password</h3>
+            <form id="passwordForm">
+              <div class="form-msg error" id="passwordMsg"></div>
+              <div class="form-group"><label for="pw_current">Current password</label><input type="password" id="pw_current" required /></div>
+              <div class="form-group"><label for="pw_new">New password</label><input type="password" id="pw_new" required minlength="8" /></div>
+              <button class="btn btn-outline" type="submit">Update password</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer" id="footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/common.js"></script>
+<script src="js/footer.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

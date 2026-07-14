@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sourcing — Pond & Puff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="sourcing.html" class="active">Sourcing</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <span id="navAuthSlot"></span>
+      <button class="icon-btn" id="cartOpenBtn" aria-label="Open cart">🛍️<span class="cart-count" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero ripple-bg" style="padding:70px 0;">
+  <div class="container">
+    <p class="eyebrow" style="color:var(--marigold);">From pond to pouch</p>
+    <h1 style="font-size:clamp(2.2rem,4vw,3.4rem); color:var(--paper); max-width:680px;">Every seed starts life underwater, in a pond in Bihar.</h1>
+    <p class="lead">Makhana comes from the seeds of the prickly water lily — grown in shallow wetland ponds across Bihar's Mithila region, which produces most of the world's supply.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">The process</p><h2>How a pond seed becomes a snack</h2></div></div>
+    <div class="timeline">
+      <div class="timeline-step">
+        <span class="step-no">01</span>
+        <h4>Hand harvested</h4>
+        <p>Farmers wade into the ponds to collect ripened seed pods by hand, a skill passed down through families in the region.</p>
+      </div>
+      <div class="timeline-step">
+        <span class="step-no">02</span>
+        <h4>Sun dried</h4>
+        <p>Harvested seeds are dried naturally over several days before the outer shell is removed.</p>
+      </div>
+      <div class="timeline-step">
+        <span class="step-no">03</span>
+        <h4>Roasted &amp; popped</h4>
+        <p>Seeds are roasted in heated sand or on a tawa until they pop into the light, puffed shape you'd recognize.</p>
+      </div>
+      <div class="timeline-step">
+        <span class="step-no">04</span>
+        <h4>Seasoned &amp; packed</h4>
+        <p>We add flavor in small batches and pack the same week — no long warehouse sit before it reaches you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--pond); color:var(--paper);">
+  <div class="container">
+    <div class="stat-strip" style="background:rgba(255,253,249,0.08);">
+      <div><b style="color:var(--marigold);">85%</b><span style="color:rgba(255,253,249,0.75);">of world's makhana grown in Bihar</span></div>
+      <div><b style="color:var(--marigold);">500+</b><span style="color:rgba(255,253,249,0.75);">farming families we buy directly from</span></div>
+      <div><b style="color:var(--marigold);">7 days</b><span style="color:rgba(255,253,249,0.75);">average time from roast to shipped</span></div>
+      <div><b style="color:var(--marigold);">0</b><span style="color:rgba(255,253,249,0.75);">middlemen between pond and pouch</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <p class="eyebrow">Why direct sourcing matters</p>
+      <h2 style="font-size:2rem; margin-bottom:16px;">Skipping the middlemen means better pay upstream, better quality downstream.</h2>
+      <p>Most makhana sold globally passes through several layers of traders before reaching a brand. We buy directly from farming cooperatives in Bihar, which means farmers see more of the final price — and we get to trace every batch back to the pond it came from.</p>
+      <p>We visit our partner farms twice a year and publish harvest updates so you always know what season's batch you're eating.</p>
+    </div>
+    <div class="split-media">
+      <img src="https://images.unsplash.com/photo-1615486511340-08f5f6d4b9a7?w=800" alt="Lotus pond wetlands where makhana is grown" />
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer" id="footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/common.js"></script>
+<script src="js/footer.js"></script>
+</body>
+</html>

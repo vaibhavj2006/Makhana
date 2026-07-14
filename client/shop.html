@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shop — Pond & Puff Makhana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html" class="active">Shop</a>
+      <a href="about.html">About</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <span id="navAuthSlot"></span>
+      <button class="icon-btn" id="cartOpenBtn" aria-label="Open cart">🛍️<span class="cart-count" id="cartCount">0</span></button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<header style="background:var(--pond); color:var(--paper); padding:56px 0 40px;">
+  <div class="container">
+    <p class="eyebrow" style="color:var(--marigold);">The full lineup</p>
+    <h1 style="font-size:clamp(2rem,4vw,3rem); color:var(--paper);">Shop makhana</h1>
+  </div>
+</header>
+
+<section class="section" style="padding-top:40px;">
+  <div class="container">
+    <div class="shop-toolbar">
+      <div class="filter-pills" id="categoryPills">
+        <button class="pill active" data-category="">All</button>
+        <button class="pill" data-category="classic">Classic</button>
+        <button class="pill" data-category="flavored">Flavored</button>
+        <button class="pill" data-category="gift-box">Gift boxes</button>
+        <button class="pill" data-category="bulk">Bulk</button>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="searchInput" placeholder="Search flavors..." />
+        </div>
+        <select class="sort-select" id="sortSelect">
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid" id="shopGrid">
+      <p>Loading products…</p>
+    </div>
+    <div style="text-align:center; margin-top:40px;" id="shopPagination"></div>
+  </div>
+</section>
+
+<footer class="site-footer" id="footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/common.js"></script>
+<script src="js/footer.js"></script>
+<script src="js/main.js"></script>
+<script src="js/shop.js"></script>
+</body>
+</html>
