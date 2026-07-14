@@ -2,7 +2,7 @@
 // it identifies your app to Google, it doesn't grant access to anything by itself.
 
 // Replace with your own API URL once deployed (see README).
-window.MAKHANA_API_BASE = window.MAKHANA_API_BASE || 'http://localhost:5000/api';
+window.MAKHANA_API_BASE = window.MAKHANA_API_BASE || 'https://makhana-c4wv.onrender.com/api';
 
 // Replace with your own OAuth Client ID from Google Cloud Console.
 // Leave as-is (empty) to keep the "Continue with Google" button hidden.
