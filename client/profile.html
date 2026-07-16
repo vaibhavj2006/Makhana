@@ -107,8 +107,8 @@
           <div class="card-panel" style="margin-bottom:20px;">
             <h3 style="font-size:1.1rem; margin-bottom:16px;">Add a new address</h3>
             <form id="addressForm">
-              <div class="form-group"><label for="addr_label">Label</label><input id="addr_label" placeholder="Home, Work, etc." /></div>
-              <div class="form-group"><label for="addr_line1">Address line 1</label><input id="addr_line1" required /></div>
+              <button type="button" class="btn btn-outline btn-sm" id="profileLocateBtn" style="margin-bottom:16px;">📍 Use my current location</button>
+              <div class="form-group"><label for="addr_label">Label</label><input id="addr_label" placeholder="Home, Work, etc." /></div>              <div class="form-group"><label for="addr_line1">Address line 1</label><input id="addr_line1" required /></div>
               <div class="form-group"><label for="addr_line2">Address line 2</label><input id="addr_line2" /></div>
               <div class="form-row">
                 <div class="form-group"><label for="addr_city">City</label><input id="addr_city" required /></div>
@@ -156,6 +156,7 @@
 <script src="js/cart.js"></script>
 <script src="js/common.js"></script>
 <script src="js/footer.js"></script>
+<script src="js/geolocation.js"></script>
 <script src="js/profile.js"></script>
 </body>
 </html>

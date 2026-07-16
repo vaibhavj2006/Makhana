@@ -58,6 +58,7 @@ const Checkout = {
 
     body.innerHTML = `
       <form id="checkoutForm" style="padding:4px 0;">
+        <button type="button" class="btn btn-outline btn-sm btn-block" id="checkoutLocateBtn" style="margin-bottom:16px;">📍 Use my current location</button>
         <div class="form-group">
           <label for="co_line1">Address line 1</label>
           <input id="co_line1" required placeholder="House no, street" />
@@ -89,6 +90,10 @@ const Checkout = {
         <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px;">Place order</button>
       </form>
     `;
+
+    document.getElementById('checkoutLocateBtn').addEventListener('click', (e) => {
+      fillAddressFromLocation({ line1: 'co_line1', city: 'co_city', state: 'co_state', pincode: 'co_pincode' }, e.target);
+    });
 
     document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
       e.preventDefault();

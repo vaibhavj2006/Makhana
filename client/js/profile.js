@@ -117,6 +117,9 @@ async function handleGoogleCredentialResponse(response) {
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthAndRender();
   initGoogleSignIn();
+  document.getElementById('profileLocateBtn')?.addEventListener('click', (e) => {
+    fillAddressFromLocation({ line1: 'addr_line1', city: 'addr_city', state: 'addr_state', pincode: 'addr_pincode' }, e.target);
+  });
 
   // ---- Login/Register tab switching ----
   const tabLogin = document.getElementById('tabLogin');
@@ -238,3 +241,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
