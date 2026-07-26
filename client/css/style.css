@@ -395,6 +395,17 @@ select.sort-select { border: 1.5px solid var(--line); border-radius: 999px; padd
   .ticker-track span { font-size: 0.85rem; padding: 0 18px; }
 }
 
+/* ---------- Scroll reveal ---------- */
+.reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.8s cubic-bezier(.2,.7,.3,1), transform 0.8s cubic-bezier(.2,.7,.3,1); }
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+.reveal-d4 { transition-delay: 0.32s; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
 /* ---------- Settings ---------- */
 .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); gap: 20px; }
 .settings-row:last-child { border-bottom: none; }

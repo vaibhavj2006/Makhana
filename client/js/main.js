@@ -11,7 +11,7 @@ function productCardHTML(p) {
     .join('');
 
   return `
-    <div class="product-card pop-in">
+    <div class="product-card pop-in reveal">
       <a href="product.html?slug=${p.slug}" class="product-media">
         ${p.isFeatured ? '<span class="product-badge">Fan favorite</span>' : ''}
         <img src="${p.images[0]}" alt="${p.name}" loading="lazy" />
@@ -64,6 +64,7 @@ async function loadFeatured() {
     grid.innerHTML = products.length
       ? products.map(productCardHTML).join('')
       : '<p>No featured products yet — check back soon.</p>';
+    if (typeof initScrollReveal === 'function') initScrollReveal();
   } catch (err) {
     grid.innerHTML = `<p>Couldn't load products right now (${err.message}). Is the API running?</p>`;
   }
