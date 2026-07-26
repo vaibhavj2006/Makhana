@@ -35,7 +35,23 @@ function initScrollReveal() {
   });
 }
 
+// On pages with a dark hero (currently just the homepage), the nav starts transparent
+// and overlays it, then solidifies to the normal white bar once you scroll past.
+function initHeroNav() {
+  const hero = document.getElementById('homeHero');
+  const nav = document.querySelector('.site-nav');
+  if (!hero || !nav) return;
+
+  const toggle = () => {
+    const heroBottom = hero.getBoundingClientRect().bottom;
+    nav.classList.toggle('nav-on-hero', heroBottom > nav.offsetHeight);
+  };
+  toggle();
+  window.addEventListener('scroll', toggle, { passive: true });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initScrollReveal();
+  initHeroNav();
 });

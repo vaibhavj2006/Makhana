@@ -130,7 +130,15 @@ button { font-family: inherit; cursor: pointer; }
   position: sticky; top: 0; z-index: 40;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
+  transition: background 0.35s ease, border-color 0.35s ease;
 }
+.site-nav.nav-on-hero { background: transparent; border-bottom-color: transparent; }
+.site-nav.nav-on-hero .brand,
+.site-nav.nav-on-hero .nav-links a,
+.site-nav.nav-on-hero .icon-btn { color: var(--paper); transition: color 0.35s ease; }
+.site-nav.nav-on-hero .nav-links a.active { border-bottom-color: var(--marigold); color: var(--marigold); }
+.site-nav.nav-on-hero .nav-actions .btn-outline { color: var(--paper); border-color: rgba(255,253,249,0.6); }
+.site-nav.nav-on-hero .nav-actions .btn-outline:hover { background: var(--paper); color: var(--pond); }
 .nav-inner {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 24px; max-width: var(--container); margin: 0 auto;
@@ -350,9 +358,38 @@ select.sort-select { border: 1.5px solid var(--line); border-radius: 999px; padd
   color: var(--marigold); text-transform: uppercase; display: inline-block; margin-bottom: 18px;
 }
 .hero-editorial {
-  background: linear-gradient(160deg, var(--pond-dark), var(--pond) 60%);
+  background: linear-gradient(165deg, #3a2318 0%, #241611 55%, #1c1712 100%);
   color: var(--paper); padding: 110px 0 0; overflow: hidden; position: relative;
 }
+.puff-field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.puff {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fffaf0, #f2e6cf 55%, #e3d3ae 100%);
+  box-shadow: inset -4px -6px 10px rgba(120, 90, 40, 0.25), 0 10px 24px rgba(0,0,0,0.25);
+  animation: puff-float ease-in-out infinite;
+}
+.puff::after { /* subtle texture dimple, like a puffed seed */
+  content: ''; position: absolute; top: 22%; left: 22%; width: 30%; height: 30%;
+  background: rgba(255,255,255,0.5); border-radius: 50%; filter: blur(1px);
+}
+.puff-1 { width: 64px; height: 64px; top: 12%; left: 8%; animation-duration: 7s; }
+.puff-2 { width: 38px; height: 38px; top: 62%; left: 5%; animation-duration: 5.5s; animation-delay: 0.6s; }
+.puff-3 { width: 50px; height: 50px; top: 20%; left: 88%; animation-duration: 6.5s; animation-delay: 0.3s; }
+.puff-4 { width: 30px; height: 30px; top: 78%; left: 92%; animation-duration: 5s; animation-delay: 1s; }
+.puff-5 { width: 44px; height: 44px; top: 45%; left: 15%; animation-duration: 8s; animation-delay: 1.4s; }
+.puff-6 { width: 26px; height: 26px; top: 8%; left: 45%; animation-duration: 4.5s; animation-delay: 0.8s; }
+.puff-7 { width: 56px; height: 56px; top: 70%; left: 78%; animation-duration: 7.5s; animation-delay: 0.2s; }
+.puff-8 { width: 34px; height: 34px; top: 35%; left: 95%; animation-duration: 6s; animation-delay: 1.8s; }
+@keyframes puff-float {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  25% { transform: translateY(-18px) translateX(6px) rotate(6deg); }
+  50% { transform: translateY(6px) translateX(-8px) rotate(-4deg); }
+  75% { transform: translateY(-10px) translateX(4px) rotate(3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .puff { animation: none; }
+}
+.hero-editorial .container { position: relative; z-index: 1; }
 .hero-editorial h1 {
   font-size: clamp(2.8rem, 7vw, 6.2rem);
   color: var(--paper); line-height: 0.98; letter-spacing: -0.02em; max-width: 900px;
