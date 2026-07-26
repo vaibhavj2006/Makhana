@@ -131,7 +131,6 @@
 </section>
 
 <footer class="site-footer" id="footer"></footer>
-
 <script src="js/config.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
@@ -141,19 +140,21 @@
 <script src="js/footer.js"></script>
 <script src="js/main.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script src="js/makhana-flock.js"></script>
+<script src="js/vanta.makhana.min.js"></script>
 <script src="js/scroll-effects.js"></script>
 <script>
   if (document.getElementById('hero')) {
-    const heroFlock = MAKHANA.FLOCK({
+    const heroEffect = VANTA.MAKHANA({
       el: '#hero',
-      quantity: 24,
-      color: 0xf5e6c8,
-      backgroundColor: null,
-      speed: 1,
+      quantity: 4,
+      wingSpan: 6,
+      speedLimit: 4,
       separation: 20,
       alignment: 20,
-      cohesion: 20
+      cohesion: 20,
+      color1: 0xf5e6c8,
+      color2: 0xd8cfb8,
+      backgroundColor: 0x000000
     });
   }
 </script>
