@@ -140,6 +140,22 @@
 <script src="js/common.js"></script>
 <script src="js/footer.js"></script>
 <script src="js/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="js/makhana-flock.js"></script>
 <script src="js/scroll-effects.js"></script>
+<script>
+  if (document.getElementById('hero')) {
+    const heroFlock = MAKHANA.FLOCK({
+      el: '#hero',
+      quantity: 24,
+      color: 0xf5e6c8,
+      backgroundColor: null,
+      speed: 1,
+      separation: 20,
+      alignment: 20,
+      cohesion: 20
+    });
+  }
+</script>
 </body>
 </html>
