@@ -17,7 +17,7 @@ function productCardHTML(p) {
         <img src="${p.images[0]}" alt="${p.name}" loading="lazy" />
       </a>
       <div class="product-body">
-       <span class="product-flavor">${p.flavor}</span>
+        <span class="product-flavor">${p.flavor}</span>
         <h3><a href="product.html?slug=${p.slug}" style="color:inherit;">${p.name}</a></h3>
         <p class="tagline">${p.tagline || ''}</p>
         <div class="rating-row"><span class="stars">${renderStars(p.ratingAvg)}</span><span>(${p.ratingCount})</span></div>

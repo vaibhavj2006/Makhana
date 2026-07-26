@@ -4,7 +4,8 @@ const {
   changePassword,
   addAddress,
   removeAddress,
-  toggleWishlist
+  toggleWishlist,
+  updatePreferences
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 
@@ -14,6 +15,7 @@ router.use(protect);
 
 router.put('/me', updateProfile);
 router.put('/me/password', changePassword);
+router.put('/me/preferences', updatePreferences);
 router.post('/me/addresses', addAddress);
 router.delete('/me/addresses/:addressId', removeAddress);
 router.put('/me/wishlist/:productId', toggleWishlist);

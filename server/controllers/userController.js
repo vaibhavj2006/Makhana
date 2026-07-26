@@ -58,4 +58,20 @@ const toggleWishlist = asyncHandler(async (req, res) => {
   res.json({ success: true, wishlist: user.wishlist });
 });
 
-module.exports = { updateProfile, changePassword, addAddress, removeAddress, toggleWishlist };
+// @route PUT /api/users/me/preferences
+const updatePreferences = asyncHandler(async (req, res) => {
+  const { language, theme, emailOptIn } = req.body;
+  const user = await User.findById(req.user._id);
+
+  if (language) user.preferences.language = language;
+  if (theme) user.preferences.theme = theme;
+  if (emailOptIn) {
+    if (typeof emailOptIn.orderUpdates === 'boolean') user.preferences.emailOptIn.orderUpdates = emailOptIn.orderUpdates;
+    if (typeof emailOptIn.promotions === 'boolean') user.preferences.emailOptIn.promotions = emailOptIn.promotions;
+  }
+
+  await user.save();
+  res.json({ success: true, preferences: user.preferences });
+});
+
+module.exports = { updateProfile, changePassword, addAddress, removeAddress, toggleWishlist, updatePreferences };

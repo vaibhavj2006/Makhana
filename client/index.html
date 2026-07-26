@@ -10,16 +10,17 @@
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+<script src="js/theme.js"></script>
 
 <nav class="site-nav">
   <div class="nav-inner">
     <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
     <div class="nav-links" id="navLinks">
-      <a href="index.html" class="active">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="about.html">About</a>
-      <a href="sourcing.html">Sourcing</a>
-      <a href="profile.html">Profile</a>
+      <a href="index.html" class="active" data-i18n="nav.home">Home</a>
+      <a href="shop.html" data-i18n="nav.shop">Shop</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
+      <a href="sourcing.html" data-i18n="nav.sourcing">Sourcing</a>
+      <a href="profile.html" data-i18n="nav.profile">Profile</a>
     </div>
     <div class="nav-actions">
       <span id="navAuthSlot"></span>
@@ -29,33 +30,42 @@
   </div>
 </nav>
 
-<header class="hero ripple-bg">
-  <div class="container hero-inner">
-    <div>
-      <p class="eyebrow" style="color:var(--marigold);">Fox nuts, done right</p>
-      <h1>Snack straight <span class="accent">from the pond</span> to your pantry.</h1>
-      <p class="lead">Makhana, roasted in small batches, sourced directly from the wetland farms of Bihar. No frying, no nonsense — just the crunch you didn't know you were missing.</p>
-      <div class="hero-actions">
-        <a href="shop.html" class="btn btn-primary">Shop the range</a>
-        <a href="sourcing.html" class="btn btn-ghost">See where it comes from</a>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><b>100%</b><span>Hand-picked seeds</span></div>
-        <div class="hero-stat"><b>0g</b><span>Trans fat, ever</span></div>
-        <div class="hero-stat"><b>6</b><span>Flavors &amp; counting</span></div>
-      </div>
+<header class="hero-editorial">
+  <div class="container">
+    <span class="bracket-label">[ We are Pond &amp; Puff ]</span>
+    <h1>
+      <span class="line">Snacks that taste like</span>
+      <span class="line"><span class="accent">someone actually</span></span>
+      <span class="line">gave a damn.</span>
+    </h1>
+    <p class="lead">Hand-picked makhana, roasted in small batches, sourced straight from the wetland farms of Bihar. No frying, no filler, no nonsense — just the crunch you didn't know you were missing.</p>
+    <div class="hero-actions">
+      <a href="shop.html" class="btn btn-primary">Shop the range</a>
+      <a href="sourcing.html" class="btn btn-ghost">See where it comes from</a>
     </div>
-    <div class="hero-visual">
-      <img src="https://images.unsplash.com/photo-1599490659213-e0b3ecc63e37?w=900" alt="Bowl of roasted makhana fox nuts" />
+    <div class="hero-stats">
+      <div class="hero-stat"><b>100%</b><span>Hand-picked seeds</span></div>
+      <div class="hero-stat"><b>0g</b><span>Trans fat, ever</span></div>
+      <div class="hero-stat"><b>6</b><span>Flavors &amp; counting</span></div>
+    </div>
+    <div class="hero-editorial-media">
+      <img src="https://images.unsplash.com/photo-1599490659213-e0b3ecc63e37?w=1600" alt="Bowl of roasted makhana fox nuts" />
     </div>
   </div>
 </header>
+
+<div class="ticker-strip">
+  <div class="ticker-track">
+    <span>Roasted not fried</span><span>Farmer-direct sourcing</span><span>Zero trans fat</span><span>Small-batch roasted</span><span>From the ponds of Bihar</span>
+    <span>Roasted not fried</span><span>Farmer-direct sourcing</span><span>Zero trans fat</span><span>Small-batch roasted</span><span>From the ponds of Bihar</span>
+  </div>
+</div>
 
 <section class="section">
   <div class="container">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Fan favorites</p>
+        <span class="bracket-label" style="color:var(--coral);">[ Fan favorites ]</span>
         <h2>Start with these</h2>
       </div>
       <a href="shop.html" class="btn btn-outline btn-sm">View full shop</a>
@@ -69,7 +79,7 @@
 <section class="section" style="background:var(--cream); padding:70px 0;">
   <div class="container">
     <div class="section-head" style="margin-bottom:20px;">
-      <div><p class="eyebrow">Why makhana</p><h2>Snack heavier on nutrition, lighter on regret</h2></div>
+      <div><span class="bracket-label" style="color:var(--coral);">[ Why makhana ]</span><h2>Snack heavier on nutrition, lighter on regret</h2></div>
     </div>
     <div class="value-grid">
       <div class="value-card">
@@ -94,13 +104,17 @@
 <section class="section">
   <div class="container split">
     <div>
-      <p class="eyebrow">Our story, short version</p>
+      <span class="bracket-label" style="color:var(--coral);">[ Our story, short version ]</span>
       <h2 style="font-size:2.2rem; margin-bottom:16px;">We just wanted a snack that didn't lie to us.</h2>
       <p>Every "healthy" snack aisle is the same three ingredients rearranged. Pond &amp; Puff started because fox nuts — a staple in Indian kitchens for centuries — deserved better packaging, better flavors, and a lot more attention outside India.</p>
       <a href="about.html" class="btn btn-secondary">Read the full story</a>
     </div>
-    <div class="split-media">
+    <div class="reveal-card">
       <img src="https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=800" alt="Makhana being roasted in a kadhai" />
+      <div class="reveal-overlay">
+        <span class="rc-tag">Small batch</span>
+        <h3>Roasted the same week you order</h3>
+      </div>
     </div>
   </div>
 </section>
@@ -108,6 +122,7 @@
 <footer class="site-footer" id="footer"></footer>
 
 <script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/geolocation.js"></script>

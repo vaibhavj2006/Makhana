@@ -47,7 +47,15 @@ const userSchema = new mongoose.Schema(
     addresses: [addressSchema],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
     isActive: { type: Boolean, default: true },
-    lastLoginAt: { type: Date }
+    lastLoginAt: { type: Date },
+    preferences: {
+      language: { type: String, enum: ['en', 'hi'], default: 'en' },
+      theme: { type: String, enum: ['light', 'dark'], default: 'light' },
+      emailOptIn: {
+        orderUpdates: { type: Boolean, default: true }, // order confirmation / shipping updates
+        promotions: { type: Boolean, default: false } // marketing / promo emails
+      }
+    }
   },
   { timestamps: true }
 );

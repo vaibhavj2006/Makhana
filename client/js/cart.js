@@ -72,7 +72,7 @@ const Cart = {
 
     const items = Cart.read();
     if (!items.length) {
-      itemsEl.innerHTML = `<div class="empty-state"><p>Your bag is empty. Go find your new favorite crunch.</p><a href="shop.html" class="btn btn-primary btn-sm">Shop makhana</a></div>`;
+      itemsEl.innerHTML = `<div class="empty-state"><p>${t('cart.empty')}</p><a href="shop.html" class="btn btn-primary btn-sm">${t('cart.shopNow')}</a></div>`;
       if (footEl) footEl.style.display = 'none';
       return;
     }
@@ -103,10 +103,10 @@ const Cart = {
 
     if (footEl) {
       footEl.innerHTML = `
-        <div class="cart-summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
-        <div class="cart-summary-row"><span>Shipping</span><span>${shipping === 0 ? 'Free' : '₹' + shipping}</span></div>
-        <div class="cart-summary-row total"><span>Total</span><span>₹${total}</span></div>
-        <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="Checkout.open()">Checkout</button>
+        <div class="cart-summary-row"><span>${t('cart.subtotal')}</span><span>₹${subtotal}</span></div>
+        <div class="cart-summary-row"><span>${t('cart.shipping')}</span><span>${shipping === 0 ? t('cart.free') : '₹' + shipping}</span></div>
+        <div class="cart-summary-row total"><span>${t('cart.total')}</span><span>₹${total}</span></div>
+        <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="Checkout.open()">${t('cart.checkout')}</button>
       `;
     }
   }

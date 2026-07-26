@@ -69,11 +69,14 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   // Fire-and-forget: don't make checkout wait on (or fail because of) email delivery.
-  sendEmail({
-    to: req.user.email,
-    subject: `Order confirmed — #${order._id.toString().slice(-6).toUpperCase()}`,
-    html: orderConfirmationEmail(order)
-  });
+  // Order confirmations respect the user's own preference (defaults to on, but they can turn it off in Settings).
+  if (req.user.preferences?.emailOptIn?.orderUpdates !== false) {
+    sendEmail({
+      to: req.user.email,
+      subject: `Order confirmed — #${order._id.toString().slice(-6).toUpperCase()}`,
+      html: orderConfirmationEmail(order)
+    });
+  }
 
   res.status(201).json({ success: true, order });
 });
@@ -110,7 +113,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
 // @route PUT /api/orders/:id/status
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  const order = await Order.findById(req.params.id).populate('user', 'name email');
+  const order = await Order.findById(req.params.id).populate('user', 'name email preferences');
   if (!order) {
     res.status(404);
     throw new Error('Order not found.');
@@ -119,7 +122,8 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   if (status === 'delivered') order.deliveredAt = new Date();
   await order.save();
 
-  if (['shipped', 'delivered', 'cancelled'].includes(status) && order.user?.email) {
+  const wantsOrderEmails = order.user?.preferences?.emailOptIn?.orderUpdates !== false;
+  if (['shipped', 'delivered', 'cancelled'].includes(status) && order.user?.email && wantsOrderEmails) {
     const statusCopy = {
       shipped: { subject: 'Your order has shipped 📦', line: "Your order's on its way." },
       delivered: { subject: 'Your order was delivered ✅', line: 'Your order has been delivered. Enjoy the crunch!' },

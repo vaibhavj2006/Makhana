@@ -7,7 +7,7 @@ function injectCartDrawer() {
     <div class="cart-overlay" id="cartOverlay"></div>
     <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag">
       <div class="cart-head">
-        <h3 class="display" style="font-size:1.3rem;">Your bag</h3>
+        <h3 class="display" style="font-size:1.3rem;" data-i18n="cart.title">Your bag</h3>
         <button class="icon-btn" onclick="Cart.close()" aria-label="Close bag">✕</button>
       </div>
       <div class="cart-items" id="cartItems"></div>
@@ -24,6 +24,7 @@ function injectCartDrawer() {
     </aside>
   `;
   document.body.appendChild(wrap);
+  applyTranslations();
   document.getElementById('checkoutOverlay').addEventListener('click', () => Checkout.close());
 }
 
@@ -84,9 +85,9 @@ const Checkout = {
           </select>
         </div>
         <div class="form-msg error" id="checkoutMsg"></div>
-        <div class="cart-summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
-        <div class="cart-summary-row"><span>Shipping</span><span>${shipping === 0 ? 'Free' : '₹' + shipping}</span></div>
-        <div class="cart-summary-row total"><span>Total</span><span>₹${subtotal + shipping}</span></div>
+        <div class="cart-summary-row"><span>${t('cart.subtotal')}</span><span>₹${subtotal}</span></div>
+        <div class="cart-summary-row"><span>${t('cart.shipping')}</span><span>${shipping === 0 ? t('cart.free') : '₹' + shipping}</span></div>
+        <div class="cart-summary-row total"><span>${t('cart.total')}</span><span>₹${subtotal + shipping}</span></div>
         <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px;">Place order</button>
       </form>
     `;
@@ -148,7 +149,7 @@ async function refreshNavAuthState() {
       navLinks.appendChild(link);
     }
   } catch {
-    authSlot.innerHTML = `<a href="profile.html" class="btn btn-outline btn-sm">Log in</a>`;
+    authSlot.innerHTML = `<a href="profile.html" class="btn btn-outline btn-sm">${t('nav.login')}</a>`;
   }
 }
 

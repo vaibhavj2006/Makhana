@@ -10,16 +10,17 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+<script src="js/theme.js"></script>
 
 <nav class="site-nav">
   <div class="nav-inner">
     <a href="index.html" class="brand"><span class="brand-mark"></span>Pond &amp; Puff</a>
     <div class="nav-links" id="navLinks">
-      <a href="index.html">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="about.html">About</a>
-      <a href="sourcing.html">Sourcing</a>
-      <a href="profile.html" class="active">Profile</a>
+      <a href="index.html" data-i18n="nav.home">Home</a>
+      <a href="shop.html" data-i18n="nav.shop">Shop</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
+      <a href="sourcing.html" data-i18n="nav.sourcing">Sourcing</a>
+      <a href="profile.html" class="active" data-i18n="nav.profile">Profile</a>
     </div>
     <div class="nav-actions">
       <span id="navAuthSlot"></span>
@@ -108,7 +109,8 @@
             <h3 style="font-size:1.1rem; margin-bottom:16px;">Add a new address</h3>
             <form id="addressForm">
               <button type="button" class="btn btn-outline btn-sm" id="profileLocateBtn" style="margin-bottom:16px;">📍 Use my current location</button>
-              <div class="form-group"><label for="addr_label">Label</label><input id="addr_label" placeholder="Home, Work, etc." /></div>              <div class="form-group"><label for="addr_line1">Address line 1</label><input id="addr_line1" required /></div>
+              <div class="form-group"><label for="addr_label">Label</label><input id="addr_label" placeholder="Home, Work, etc." /></div>
+              <div class="form-group"><label for="addr_line1">Address line 1</label><input id="addr_line1" required /></div>
               <div class="form-group"><label for="addr_line2">Address line 2</label><input id="addr_line2" /></div>
               <div class="form-row">
                 <div class="form-group"><label for="addr_city">City</label><input id="addr_city" required /></div>
@@ -152,6 +154,7 @@
 <footer class="site-footer" id="footer"></footer>
 
 <script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/common.js"></script>
