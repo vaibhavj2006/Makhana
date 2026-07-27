@@ -1,0 +1,107 @@
+/*
+  navbar-resize.css
+  --------------------------------------------------------------
+  Recreates the "resizable navbar" effect: on scroll, the nav
+  shrinks into a floating rounded pill with a blurred background
+  and shadow. On pages with a hero section (id="homeHero"), the
+  nav starts fully transparent so it overlays the hero, then
+  transitions to the pill look once you scroll.
+
+  Works with your existing markup:
+    <nav class="site-nav">
+      <div class="nav-inner"> ... </div>
+    </nav>
+
+  Add this AFTER your existing style.css so it can override/extend
+  the .site-nav rules already there:
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/navbar-resize.css" />
+*/
+
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  padding: 20px 0;
+  transition: padding 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-nav .nav-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  border-radius: 999px;
+  transition:
+    max-width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease,
+    box-shadow 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+
+/* Default state on pages WITHOUT a hero (shop, about, profile, etc.)
+   — solid pill from the start, since there's no dark hero to sit over. */
+.site-nav .nav-inner {
+  background-color: var(--paper, #ffffff);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* On pages WITH a hero, start fully transparent so it overlays the hero art. */
+.site-nav.has-hero:not(.nav-scrolled) .nav-inner {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.site-nav.has-hero:not(.nav-scrolled) .nav-links a,
+.site-nav.has-hero:not(.nav-scrolled) .brand {
+  color: var(--paper, #ffffff);
+}
+
+/* Scrolled state: shrink into a floating pill, everywhere. */
+.site-nav.nav-scrolled {
+  padding: 12px 0;
+}
+
+.site-nav.nav-scrolled .nav-inner {
+  max-width: 860px;
+  padding: 10px 22px;
+  background-color: var(--paper, #ffffff);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.site-nav.nav-scrolled .nav-links a,
+.site-nav.nav-scrolled .brand {
+  color: inherit;
+}
+
+/* Small nicety: nav links get an underline-grow hover, matches "resizable navbar" feel */
+.site-nav .nav-links a {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.site-nav .nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: currentColor;
+  transition: width 0.25s ease;
+}
+
+.site-nav .nav-links a:hover::after,
+.site-nav .nav-links a.active::after {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav,
+  .site-nav .nav-inner {
+    transition: none;
+  }
+}
