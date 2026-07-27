@@ -130,7 +130,7 @@ button { font-family: inherit; cursor: pointer; }
   position: sticky; top: 0; z-index: 40;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
-  transition: background 0.35s ease, border-color 0.35s ease;
+  transition: background 0.35s ease, border-color 0.35s ease, padding 0.35s cubic-bezier(0.22,1,0.36,1);
 }
 .site-nav.nav-on-hero { background: transparent; border-bottom-color: transparent; }
 .site-nav.nav-on-hero .brand,
@@ -139,9 +139,32 @@ button { font-family: inherit; cursor: pointer; }
 .site-nav.nav-on-hero .nav-links a.active { border-bottom-color: var(--marigold); color: var(--marigold); }
 .site-nav.nav-on-hero .nav-actions .btn-outline { color: var(--paper); border-color: rgba(255,253,249,0.6); }
 .site-nav.nav-on-hero .nav-actions .btn-outline:hover { background: var(--paper); color: var(--pond); }
+
+/* Shrinks into a floating rounded pill once scrolled (works alongside nav-on-hero,
+   toggled by scroll-effects.js). Does not use position:fixed, to avoid layout jump. */
+.site-nav.nav-scrolled { padding: 10px 0; background: transparent; border-bottom-color: transparent; }
+.site-nav.nav-scrolled .nav-inner {
+  max-width: 860px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background-color: var(--paper);
+  box-shadow: 0 10px 34px rgba(0,0,0,0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: max-width 0.35s cubic-bezier(0.22,1,0.36,1), padding 0.35s cubic-bezier(0.22,1,0.36,1), background-color 0.35s ease, box-shadow 0.35s ease;
+}
+.site-nav.nav-scrolled.nav-on-hero .nav-inner { background-color: var(--paper); }
+.site-nav.nav-scrolled .brand,
+.site-nav.nav-scrolled .nav-links a,
+.site-nav.nav-scrolled .icon-btn { color: var(--ink); }
+.site-nav.nav-scrolled .nav-links a.active { color: var(--coral); border-bottom-color: var(--coral); }
+.site-nav.nav-scrolled .nav-actions .btn-outline { color: var(--pond); border-color: var(--pond); }
+.site-nav.nav-scrolled .nav-actions .btn-outline:hover { background: var(--pond); color: var(--paper); }
+
 .nav-inner {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 24px; max-width: var(--container); margin: 0 auto;
+  transition: max-width 0.35s cubic-bezier(0.22,1,0.36,1), padding 0.35s cubic-bezier(0.22,1,0.36,1);
 }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--pond); }
 .brand-mark {
@@ -150,6 +173,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .nav-links { display: flex; gap: 28px; align-items: center; }
 .nav-links a {
+  position: relative;
   font-weight: 600; font-size: 0.95rem; color: var(--ink);
   padding: 6px 2px; border-bottom: 2px solid transparent;
 }
@@ -193,8 +217,22 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- Sections ---------- */
 .section { padding: 80px 0; }
-.section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; gap: 20px; flex-wrap: wrap; }
-.section-head h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); }
+.section-head {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 22px; margin-bottom: 44px;
+}
+.section-head > div { display: flex; flex-direction: column; align-items: center; }
+.section-head h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); max-width: 640px; }
+.section-head .btn { margin-top: 2px; }
+.section-head .bracket-label { position: relative; padding-top: 22px; }
+.section-head .bracket-label::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 56px; height: 2px;
+  background: linear-gradient(to right, transparent, var(--coral), transparent);
+}
+@media (max-width: 640px) {
+  .section-head { gap: 16px; margin-bottom: 32px; }
+}
 
 /* ---------- Product cards ---------- */
 .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
@@ -249,8 +287,8 @@ select.sort-select { border: 1.5px solid var(--line); border-radius: 999px; padd
 .timeline-step .step-no { font-family: var(--font-display); font-size: 1.6rem; color: var(--marigold); }
 .timeline-step h4 { margin: 10px 0 8px; font-size: 1.05rem; }
 .value-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
-.value-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 28px; }
-.value-card .icon-dot { width: 46px; height: 46px; border-radius: 50%; background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 16px; }
+.value-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 28px; text-align: center; }
+.value-card .icon-dot { width: 46px; height: 46px; border-radius: 50%; background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin: 0 auto 16px; }
 
 /* ---------- Forms ---------- */
 .auth-shell { max-width: 440px; margin: 60px auto; }
@@ -368,7 +406,7 @@ select.sort-select { border: 1.5px solid var(--line); border-radius: 999px; padd
   box-shadow: inset -4px -6px 10px rgba(120, 90, 40, 0.25), 0 10px 24px rgba(0,0,0,0.25);
   animation: puff-float ease-in-out infinite;
 }
-.puff::after { /* subtle texture dimple, like a puffed seed */
+.puff::after {
   content: ''; position: absolute; top: 22%; left: 22%; width: 30%; height: 30%;
   background: rgba(255,255,255,0.5); border-radius: 50%; filter: blur(1px);
 }
@@ -389,18 +427,40 @@ select.sort-select { border: 1.5px solid var(--line); border-radius: 999px; padd
 @media (prefers-reduced-motion: reduce) {
   .puff { animation: none; }
 }
-.hero-editorial .container { position: relative; z-index: 1; }
+
+/* Centered hero content + subtle frame accents (merged from hero-frame.css,
+   adapted to work with existing markup — no new wrapper divs required) */
+.hero-editorial .container {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.hero-editorial .container::before,
+.hero-editorial .container::after {
+  content: ''; position: absolute; top: 0; width: 1px; height: 160px;
+  background: linear-gradient(to bottom, transparent, var(--marigold), transparent);
+  pointer-events: none;
+}
+.hero-editorial .container::before { left: 0; }
+.hero-editorial .container::after { right: 0; }
 .hero-editorial h1 {
   font-size: clamp(2.8rem, 7vw, 6.2rem);
   color: var(--paper); line-height: 0.98; letter-spacing: -0.02em; max-width: 900px;
 }
 .hero-editorial h1 .line { display: block; }
 .hero-editorial h1 .accent { color: var(--marigold); font-style: italic; }
-.hero-editorial .lead { color: rgba(255,253,249,0.78); font-size: 1.2rem; max-width: 520px; margin: 26px 0 34px; }
+.hero-editorial .lead { color: rgba(255,253,249,0.78); font-size: 1.2rem; max-width: 560px; margin: 26px auto 34px; }
+.hero-editorial .hero-actions { justify-content: center; }
+.hero-editorial .hero-stats { justify-content: center; }
 .hero-editorial-media {
-  margin-top: 60px; aspect-ratio: 21/8; border-radius: var(--radius-lg) var(--radius-lg) 0 0; overflow: hidden;
+  margin-top: 60px; aspect-ratio: 21/8; overflow: hidden;
+  width: 100%; max-width: 1080px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.25);
 }
-.hero-editorial-media img { width: 100%; height: 100%; object-fit: cover; }
+.hero-editorial-media img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
 
 .ticker-strip { background: var(--marigold); overflow: hidden; padding: 16px 0; white-space: nowrap; }
 .ticker-track { display: inline-flex; animation: ticker-scroll 22s linear infinite; }
@@ -430,6 +490,7 @@ select.sort-select { border: 1.5px solid var(--line); border-radius: 999px; padd
 @media (max-width: 700px) {
   .hero-editorial { padding-top: 80px; }
   .ticker-track span { font-size: 0.85rem; padding: 0 18px; }
+  .hero-editorial .container::before, .hero-editorial .container::after { display: none; }
 }
 
 /* ---------- Scroll reveal ---------- */

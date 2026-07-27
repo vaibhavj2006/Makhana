@@ -50,8 +50,24 @@ function initHeroNav() {
   window.addEventListener('scroll', toggle, { passive: true });
 }
 
+// Shrinks the nav into a floating rounded pill once the page is scrolled past a
+// small threshold. Runs on every page (not just the homepage) — works alongside
+// nav-on-hero rather than replacing it.
+function initNavScrollShrink() {
+  const nav = document.querySelector('.site-nav');
+  if (!nav) return;
+
+  const threshold = 60;
+  const toggle = () => {
+    nav.classList.toggle('nav-scrolled', window.scrollY > threshold);
+  };
+  toggle();
+  window.addEventListener('scroll', toggle, { passive: true });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initScrollReveal();
   initHeroNav();
+  initNavScrollShrink();
 });
