@@ -1,0 +1,82 @@
+/*
+  section-frame.css
+  --------------------------------------------------------------
+  Extends the hero's centered look to section headers throughout
+  the homepage (and anywhere else .section-head is used):
+  - bracket-label + h2 centered
+  - CTA button (e.g. "View full shop") moves below, centered
+  - small gradient accent line above each label, echoing the
+    hero's corner-accent frame lines
+
+  Does NOT touch the "Our story" split section (text/image
+  side-by-side) — that's a different, intentional layout.
+
+  Add this AFTER hero-frame.css:
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/navbar-resize.css" />
+    <link rel="stylesheet" href="css/hero-frame.css" />
+    <link rel="stylesheet" href="css/section-frame.css" />
+*/
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 22px;
+  margin-bottom: 44px;
+}
+
+.section-head > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-head h2 {
+  max-width: 640px;
+}
+
+.section-head .btn {
+  margin-top: 2px;
+}
+
+/* Small gradient accent line above each bracket-label, echoing
+   the hero's frame-line accents */
+.section-head .bracket-label {
+  position: relative;
+  padding-top: 22px;
+}
+
+.section-head .bracket-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--coral, #e8623e),
+    transparent
+  );
+}
+
+/* Center the "Why makhana" value cards' text too, for consistency */
+.value-card {
+  text-align: center;
+}
+
+.value-card .icon-dot {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 640px) {
+  .section-head {
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+}
