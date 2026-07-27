@@ -8,30 +8,30 @@
     reference design)
   - A boxed/bordered showcase card around the hero image,
     instead of a plain full-width image
-
+ 
   This does NOT touch your existing .puff-field, Vanta canvas,
   or .reveal/.reveal-d1-4 animation classes — it only adds
   layout/alignment on top of what's already there.
-
+ 
   Add this AFTER navbar-resize.css:
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/navbar-resize.css" />
     <link rel="stylesheet" href="css/hero-frame.css" />
 */
-
+ 
 #homeHero.hero-editorial {
   position: relative;
   overflow: hidden;
 }
-
+ 
 /* The bordered frame wrapping the hero content */
 #homeHero .hero-frame {
   position: relative;
-  max-width: 1000px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 64px;
 }
-
+ 
 #homeHero .hero-frame::before,
 #homeHero .hero-frame::after {
   content: "";
@@ -43,7 +43,7 @@
 }
 #homeHero .hero-frame::before { left: 0; }
 #homeHero .hero-frame::after { right: 0; }
-
+ 
 /* Gradient accent glow on the left border */
 .frame-line-left,
 .frame-line-right {
@@ -61,7 +61,7 @@
 }
 .frame-line-left { left: 0; }
 .frame-line-right { right: 0; }
-
+ 
 /* Gradient accent glow centered on the bottom border */
 .frame-line-bottom {
   position: absolute;
@@ -78,46 +78,49 @@
   );
   pointer-events: none;
 }
-
+ 
 /* Centered hero text content */
 #homeHero .hero-center {
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 0 50px;
+  gap: 8px;
+  padding: 110px 0 90px;
 }
-
+ 
 #homeHero .hero-center h1 .line {
   display: block;
 }
-
+ 
 #homeHero .hero-center .lead {
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 620px;
+  margin: 20px auto 32px;
 }
-
+ 
 #homeHero .hero-actions {
   justify-content: center;
+  gap: 20px;
+  margin-bottom: 40px;
 }
-
+ 
 #homeHero .hero-stats {
   justify-content: center;
+  gap: 48px;
 }
-
+ 
 /* Boxed showcase card around the hero image */
 #homeHero .hero-showcase-box {
-  margin-top: 48px;
+  margin-top: 64px;
   width: 100%;
-  max-width: 760px;
+  max-width: 880px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 24px;
-  padding: 12px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
 }
-
+ 
 #homeHero .hero-showcase-box img {
   width: 100%;
   display: block;
@@ -125,8 +128,9 @@
   object-fit: cover;
   aspect-ratio: 16 / 9;
 }
-
+ 
 @media (max-width: 640px) {
-  #homeHero .hero-frame { padding: 0 20px; }
-  #homeHero .hero-center { padding: 40px 0 32px; }
+  #homeHero .hero-frame { padding: 0 24px; }
+  #homeHero .hero-center { padding: 60px 0 48px; }
 }
+ 
