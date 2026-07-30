@@ -163,7 +163,7 @@ const Checkout = {
     modal.style.display = 'flex';
     Checkout.loadSavedAddresses();
 
-    document.getElementById('checkoutForm').addEventListener('submit', Checkout.submitOrder);
+    document.getElementById('checkoutForm').onsubmit = Checkout.submitOrder;
   },
 
   close() {
@@ -256,7 +256,19 @@ const Toast = {
   }
 };
 
+// Global Initialization
 document.addEventListener('DOMContentLoaded', () => {
   Cart.renderAll();
+
+  // Close cart when clicking overlay
   document.getElementById('cartOverlay')?.addEventListener('click', Cart.close);
+
+  // Global delegate click handler to open cart on any cart button/icon click
+  document.addEventListener('click', (e) => {
+    const cartTrigger = e.target.closest('#cartBtn, #cartIcon, .cart-icon, .cart-btn, [data-open-cart]');
+    if (cartTrigger) {
+      e.preventDefault();
+      Cart.open();
+    }
+  });
 });
