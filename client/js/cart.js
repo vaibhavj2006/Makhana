@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global delegate click handler to open cart on any cart button/icon click
   document.addEventListener('click', (e) => {
-    const cartTrigger = e.target.closest('#cartBtn, #cartIcon, .cart-icon, .cart-btn, [data-open-cart]');
+    const cartTrigger = e.target.closest('#cartOpenBtn, #cartBtn, #cartIcon, .cart-icon, .cart-btn, [data-open-cart]');
     if (cartTrigger) {
       e.preventDefault();
       Cart.open();
