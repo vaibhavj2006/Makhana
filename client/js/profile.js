@@ -1,10 +1,13 @@
 function showMsg(id, message, type = 'error') {
   const el = document.getElementById(id);
+  if (!el) return;
   el.textContent = message;
   el.className = `form-msg ${type} show`;
 }
+
 function hideMsg(id) {
-  document.getElementById(id).classList.remove('show');
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('show');
 }
 
 async function checkAuthAndRender() {
@@ -29,27 +32,45 @@ function renderDashboard(user) {
 
 function renderAddresses(addresses) {
   const el = document.getElementById('addressesList');
+  if (!el) return;
+
   if (!addresses.length) {
     el.innerHTML = '<p style="color:var(--ink-soft);">No saved addresses yet.</p>';
     return;
   }
+
   el.innerHTML = addresses
     .map(
       (a) => `
-    <div class="order-row">
+    <div class="order-row" style="align-items:flex-start; margin-bottom:12px;">
       <div>
-        <strong>${a.label || 'Address'}</strong>
-        <p style="margin:4px 0 0; font-size:0.88rem;">${a.line1}, ${a.line2 ? a.line2 + ', ' : ''}${a.city}, ${a.state} ${a.pincode} · ${a.phone}</p>
+        <strong>${a.label || 'Address'} ${a.isDefault ? '<span class="badge" style="background:var(--brand);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;margin-left:6px;">Default</span>' : ''}</strong>
+        <p style="margin:4px 0 0; font-size:0.88rem;">
+          ${a.line1}${a.line2 ? ', ' + a.line2 : ''}, ${a.city}, ${a.state} ${a.pincode} · 📞 ${a.phone}
+        </p>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="deleteAddress('${a._id}')">Remove</button>
+      <div style="display:flex; gap:8px;">
+        ${!a.isDefault ? `<button class="btn btn-outline btn-sm" onclick="setDefaultAddress('${a._id}')">Make default</button>` : ''}
+        <button class="btn btn-outline btn-sm" style="color:var(--coral); border-color:var(--coral);" onclick="deleteAddress('${a._id}')">Remove</button>
+      </div>
     </div>`
     )
     .join('');
 }
 
+async function setDefaultAddress(id) {
+  try {
+    const { addresses } = await api.put(`/addresses/${id}/default`);
+    renderAddresses(addresses);
+    Toast.show('Default address set.');
+  } catch (err) {
+    Toast.show(err.message);
+  }
+}
+
 async function deleteAddress(id) {
   try {
-    const { addresses } = await api.delete(`/users/me/addresses/${id}`);
+    const { addresses } = await api.delete(`/addresses/${id}`);
     renderAddresses(addresses);
     Toast.show('Address removed.');
   } catch (err) {
@@ -83,7 +104,7 @@ async function loadOrders() {
 }
 
 function initGoogleSignIn(attemptsLeft = 10) {
-  if (!window.GOOGLE_CLIENT_ID) return; // Google Sign-In not configured — skip silently
+  if (!window.GOOGLE_CLIENT_ID) return;
 
   if (!window.google?.accounts?.id) {
     if (attemptsLeft > 0) setTimeout(() => initGoogleSignIn(attemptsLeft - 1), 300);
@@ -124,56 +145,65 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
 
-  tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('active');
-    tabRegister.classList.remove('active');
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-  });
-  tabRegister.addEventListener('click', () => {
-    tabRegister.classList.add('active');
-    tabLogin.classList.remove('active');
-    registerForm.style.display = 'block';
-    loginForm.style.display = 'none';
-  });
+  if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      registerForm.style.display = 'block';
+      loginForm.style.display = 'none';
+    });
+  }
 
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMsg('loginMsg');
-    try {
-      const { user } = await api.post('/auth/login', {
-        email: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPassword').value
-      });
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMsg('loginMsg');
+      try {
+        const { user } = await api.post('/auth/login', {
+          email: document.getElementById('loginEmail').value,
+          password: document.getElementById('loginPassword').value
+        });
+        refreshNavAuthState();
+        renderDashboard(user);
+      } catch (err) {
+        showMsg('loginMsg', err.message);
+      }
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMsg('registerMsg');
+      try {
+        const { user } = await api.post('/auth/register', {
+          name: document.getElementById('regName').value,
+          email: document.getElementById('regEmail').value,
+          phone: document.getElementById('regPhone').value,
+          password: document.getElementById('regPassword').value
+        });
+        refreshNavAuthState();
+        renderDashboard(user);
+      } catch (err) {
+        showMsg('registerMsg', err.message);
+      }
+    });
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await api.post('/auth/logout');
       refreshNavAuthState();
-      renderDashboard(user);
-    } catch (err) {
-      showMsg('loginMsg', err.message);
-    }
-  });
-
-  registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMsg('registerMsg');
-    try {
-      const { user } = await api.post('/auth/register', {
-        name: document.getElementById('regName').value,
-        email: document.getElementById('regEmail').value,
-        phone: document.getElementById('regPhone').value,
-        password: document.getElementById('regPassword').value
-      });
-      refreshNavAuthState();
-      renderDashboard(user);
-    } catch (err) {
-      showMsg('registerMsg', err.message);
-    }
-  });
-
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await api.post('/auth/logout');
-    refreshNavAuthState();
-    location.reload();
-  });
+      location.reload();
+    });
+  }
 
   // ---- Dashboard tabs ----
   document.querySelectorAll('.dash-nav-item').forEach((item) => {
@@ -185,56 +215,101 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ---- Geolocation locator button ----
+  const locateBtn = document.getElementById('profileLocateBtn');
+  if (locateBtn) {
+    locateBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        Toast.show('Geolocation is not supported by your browser');
+        return;
+      }
+      locateBtn.textContent = '⌛ Detecting position...';
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const { latitude, longitude } = pos.coords;
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            const data = await res.json();
+            if (data.address) {
+              document.getElementById('addr_line1').value = data.address.road || data.address.suburb || '';
+              document.getElementById('addr_city').value = data.address.city || data.address.town || data.address.village || '';
+              document.getElementById('addr_state').value = data.address.state || '';
+              document.getElementById('addr_pincode').value = data.address.postcode || '';
+              Toast.show('Location loaded! Check details.');
+            }
+          } catch {
+            Toast.show('Failed to convert coordinates to address.');
+          } finally {
+            locateBtn.textContent = '📍 Use my current location';
+          }
+        },
+        () => {
+          Toast.show('Unable to retrieve your location.');
+          locateBtn.textContent = '📍 Use my current location';
+        }
+      );
+    });
+  }
+
   // ---- Address form ----
-  document.getElementById('addressForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-      const { addresses } = await api.post('/users/me/addresses', {
-        label: document.getElementById('addr_label').value,
-        line1: document.getElementById('addr_line1').value,
-        line2: document.getElementById('addr_line2').value,
-        city: document.getElementById('addr_city').value,
-        state: document.getElementById('addr_state').value,
-        pincode: document.getElementById('addr_pincode').value,
-        phone: document.getElementById('addr_phone').value
-      });
-      renderAddresses(addresses);
-      e.target.reset();
-      Toast.show('Address saved.');
-    } catch (err) {
-      Toast.show(err.message);
-    }
-  });
+  const addressForm = document.getElementById('addressForm');
+  if (addressForm) {
+    addressForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const { addresses } = await api.post('/addresses', {
+          label: document.getElementById('addr_label').value || 'Home',
+          line1: document.getElementById('addr_line1').value,
+          line2: document.getElementById('addr_line2').value,
+          city: document.getElementById('addr_city').value,
+          state: document.getElementById('addr_state').value,
+          pincode: document.getElementById('addr_pincode').value,
+          phone: document.getElementById('addr_phone').value
+        });
+        renderAddresses(addresses);
+        e.target.reset();
+        Toast.show('Address saved.');
+      } catch (err) {
+        Toast.show(err.message);
+      }
+    });
+  }
 
   // ---- Account details form ----
-  document.getElementById('accountForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMsg('accountMsg');
-    try {
-      await api.put('/users/me', {
-        name: document.getElementById('acc_name').value,
-        phone: document.getElementById('acc_phone').value
-      });
-      showMsg('accountMsg', 'Profile updated.', 'success');
-      refreshNavAuthState();
-    } catch (err) {
-      showMsg('accountMsg', err.message);
-    }
-  });
+  const accountForm = document.getElementById('accountForm');
+  if (accountForm) {
+    accountForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMsg('accountMsg');
+      try {
+        await api.put('/users/me', {
+          name: document.getElementById('acc_name').value,
+          phone: document.getElementById('acc_phone').value
+        });
+        showMsg('accountMsg', 'Profile updated.', 'success');
+        refreshNavAuthState();
+      } catch (err) {
+        showMsg('accountMsg', err.message);
+      }
+    });
+  }
 
   // ---- Password form ----
-  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMsg('passwordMsg');
-    try {
-      await api.put('/users/me/password', {
-        currentPassword: document.getElementById('pw_current').value,
-        newPassword: document.getElementById('pw_new').value
-      });
-      showMsg('passwordMsg', 'Password updated.', 'success');
-      e.target.reset();
-    } catch (err) {
-      showMsg('passwordMsg', err.message);
-    }
-  });
+  const passwordForm = document.getElementById('passwordForm');
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMsg('passwordMsg');
+      try {
+        await api.put('/users/me/password', {
+          currentPassword: document.getElementById('pw_current').value,
+          newPassword: document.getElementById('pw_new').value
+        });
+        showMsg('passwordMsg', 'Password updated.', 'success');
+        e.target.reset();
+      } catch (err) {
+        showMsg('passwordMsg', err.message);
+      }
+    });
+  }
 });

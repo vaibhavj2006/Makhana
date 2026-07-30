@@ -1,5 +1,4 @@
 // Cart lives in localStorage as a simple line-item list.
-// Prices are always re-verified server-side at checkout, so nothing here is trusted blindly.
 const CART_KEY = 'makhana_cart_v1';
 
 const Cart = {
@@ -72,7 +71,7 @@ const Cart = {
 
     const items = Cart.read();
     if (!items.length) {
-      itemsEl.innerHTML = `<div class="empty-state"><p>${t('cart.empty')}</p><a href="shop.html" class="btn btn-primary btn-sm">${t('cart.shopNow')}</a></div>`;
+      itemsEl.innerHTML = `<div class="empty-state"><p>Your bag is empty.</p><a href="shop.html" class="btn btn-primary btn-sm">Shop now</a></div>`;
       if (footEl) footEl.style.display = 'none';
       return;
     }
@@ -103,11 +102,140 @@ const Cart = {
 
     if (footEl) {
       footEl.innerHTML = `
-        <div class="cart-summary-row"><span>${t('cart.subtotal')}</span><span>₹${subtotal}</span></div>
-        <div class="cart-summary-row"><span>${t('cart.shipping')}</span><span>${shipping === 0 ? t('cart.free') : '₹' + shipping}</span></div>
-        <div class="cart-summary-row total"><span>${t('cart.total')}</span><span>₹${total}</span></div>
-        <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="Checkout.open()">${t('cart.checkout')}</button>
+        <div class="cart-summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+        <div class="cart-summary-row"><span>Shipping</span><span>${shipping === 0 ? 'FREE' : '₹' + shipping}</span></div>
+        <div class="cart-summary-row total"><span>Total</span><span>₹${total}</span></div>
+        <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="Checkout.open()">Checkout</button>
       `;
+    }
+  }
+};
+
+const Checkout = {
+  async open() {
+    Cart.close();
+    let modal = document.getElementById('checkoutModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'checkoutModal';
+      modal.className = 'modal-overlay';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;';
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="margin:0;font-size:1.2rem;">Shipping & Checkout</h3>
+          <button onclick="Checkout.close()" style="border:none;background:none;font-size:1.2rem;cursor:pointer;">✕</button>
+        </div>
+
+        <div id="checkoutSavedAddrContainer" style="margin-bottom:16px;display:none;">
+          <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;">Select Saved Address</label>
+          <select id="checkoutAddrSelect" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);font-size:0.9rem;">
+            <option value="">-- Use a new address --</option>
+          </select>
+        </div>
+
+        <form id="checkoutForm">
+          <div class="form-group"><label>Address Line 1</label><input id="co_line1" required /></div>
+          <div class="form-group"><label>Address Line 2</label><input id="co_line2" /></div>
+          <div class="form-row" style="display:flex;gap:12px;">
+            <div class="form-group" style="flex:1;"><label>City</label><input id="co_city" required /></div>
+            <div class="form-group" style="flex:1;"><label>State</label><input id="co_state" required /></div>
+          </div>
+          <div class="form-row" style="display:flex;gap:12px;">
+            <div class="form-group" style="flex:1;"><label>Pincode</label><input id="co_pincode" required /></div>
+            <div class="form-group" style="flex:1;"><label>Phone</label><input id="co_phone" required /></div>
+          </div>
+
+          <div style="margin:16px 0;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.88rem;cursor:pointer;">
+              <input type="checkbox" id="co_saveAddress" checked /> Save address to profile for future checkouts
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Place Order (₹${Cart.subtotal() >= 699 ? Cart.subtotal() : Cart.subtotal() + 49})</button>
+        </form>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+    Checkout.loadSavedAddresses();
+
+    document.getElementById('checkoutForm').addEventListener('submit', Checkout.submitOrder);
+  },
+
+  close() {
+    const modal = document.getElementById('checkoutModal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  async loadSavedAddresses() {
+    try {
+      const { addresses } = await api.get('/addresses');
+      if (addresses && addresses.length > 0) {
+        const container = document.getElementById('checkoutSavedAddrContainer');
+        const select = document.getElementById('checkoutAddrSelect');
+        container.style.display = 'block';
+
+        addresses.forEach((addr) => {
+          const opt = document.createElement('option');
+          opt.value = addr._id;
+          opt.textContent = `${addr.label || 'Saved'}: ${addr.line1}, ${addr.city} (${addr.pincode})`;
+          if (addr.isDefault) opt.selected = true;
+          select.appendChild(opt);
+        });
+
+        const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+        if (defaultAddr) Checkout.fillForm(defaultAddr);
+
+        select.addEventListener('change', (e) => {
+          const selected = addresses.find((a) => a._id === e.target.value);
+          if (selected) {
+            Checkout.fillForm(selected);
+          } else {
+            document.getElementById('checkoutForm').reset();
+          }
+        });
+      }
+    } catch {
+      // User is likely guest — hide saved address section
+    }
+  },
+
+  fillForm(addr) {
+    document.getElementById('co_line1').value = addr.line1 || '';
+    document.getElementById('co_line2').value = addr.line2 || '';
+    document.getElementById('co_city').value = addr.city || '';
+    document.getElementById('co_state').value = addr.state || '';
+    document.getElementById('co_pincode').value = addr.pincode || '';
+    document.getElementById('co_phone').value = addr.phone || '';
+  },
+
+  async submitOrder(e) {
+    e.preventDefault();
+    try {
+      const orderData = {
+        items: Cart.read().map((i) => ({ product: i.productId, variant: i.variantId, quantity: i.quantity })),
+        shippingAddress: {
+          line1: document.getElementById('co_line1').value,
+          line2: document.getElementById('co_line2').value,
+          city: document.getElementById('co_city').value,
+          state: document.getElementById('co_state').value,
+          pincode: document.getElementById('co_pincode').value,
+          phone: document.getElementById('co_phone').value
+        },
+        saveAddress: document.getElementById('co_saveAddress').checked
+      };
+
+      await api.post('/orders', orderData);
+      Cart.clear();
+      Checkout.close();
+      Toast.show('🎉 Order placed successfully!');
+      setTimeout(() => (window.location.href = 'profile.html'), 1500);
+    } catch (err) {
+      Toast.show(err.message || 'Failed to place order.');
     }
   }
 };
