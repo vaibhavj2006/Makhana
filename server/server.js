@@ -13,6 +13,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes');
+const addressRoutes = require('./routes/addressRoutes');
 
 connectDB();
 
@@ -39,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/addresses', addressRoutes);
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'API is running.' }));
 

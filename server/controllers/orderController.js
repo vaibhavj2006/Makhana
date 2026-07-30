@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const User = require('../models/User');
 const { sendEmail } = require('../utils/sendEmail');
 const { orderConfirmationEmail } = require('../utils/emailTemplates');
 
@@ -9,7 +10,7 @@ const FREE_SHIPPING_THRESHOLD = 699;
 
 // @route POST /api/orders  (auth required)
 const createOrder = asyncHandler(async (req, res) => {
-  const { items, shippingAddress, paymentMethod } = req.body;
+  const { items, shippingAddress, paymentMethod, saveAddress } = req.body;
 
   if (!items || !items.length) {
     res.status(400);
@@ -67,6 +68,32 @@ const createOrder = asyncHandler(async (req, res) => {
     shippingPrice,
     totalPrice
   });
+
+  // Optional: shopper checked "save this address" at checkout — add it to their address book.
+  // Never overwrites/removes existing addresses; just appends and only sets default if they have none yet.
+  if (saveAddress) {
+    const user = await User.findById(req.user._id);
+    const alreadySaved = user.addresses.some(
+      (a) =>
+        a.line1 === shippingAddress.line1 &&
+        a.pincode === shippingAddress.pincode &&
+        a.phone === shippingAddress.phone
+    );
+    if (!alreadySaved) {
+      user.addresses.push({
+        label: shippingAddress.label || 'Home',
+        line1: shippingAddress.line1,
+        line2: shippingAddress.line2,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        pincode: shippingAddress.pincode,
+        country: shippingAddress.country || 'India',
+        phone: shippingAddress.phone,
+        isDefault: user.addresses.length === 0
+      });
+      await user.save();
+    }
+  }
 
   // Fire-and-forget: don't make checkout wait on (or fail because of) email delivery.
   // Order confirmations respect the user's own preference (defaults to on, but they can turn it off in Settings).
