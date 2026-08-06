@@ -25,7 +25,7 @@ async function apiRequest(path, { method = 'GET', body, headers = {} } = {}) {
 
 const api = {
   get: (path) => apiRequest(path),
-  post: (path, body) => apiRequest(path, { method: 'POST', body }),
-  put: (path, body) => apiRequest(path, { method: 'PUT', body }),
+  post: (path, body, headers) => apiRequest(path, { method: 'POST', body, headers }),
+  put: (path, body, headers) => apiRequest(path, { method: 'PUT', body, headers }),
   delete: (path) => apiRequest(path, { method: 'DELETE' })
 };

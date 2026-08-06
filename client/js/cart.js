@@ -112,8 +112,20 @@ const Cart = {
 };
 
 const Checkout = {
+  // Set in open(), cleared in close() and on successful submit.
+  // Kept alive across a failed submitOrder() so a retry reuses the same key.
+  idempotencyKey: null,
+
   async open() {
     Cart.close();
+
+    // One key per checkout attempt. If submitOrder fails (network blip, etc.)
+    // and the user hits "Place Order" again without closing the modal, we want
+    // the SAME key resent — that's what makes retries safe against duplicate orders.
+    if (!Checkout.idempotencyKey) {
+      Checkout.idempotencyKey = crypto.randomUUID();
+    }
+
     let modal = document.getElementById('checkoutModal');
     if (!modal) {
       modal = document.createElement('div');
@@ -169,6 +181,8 @@ const Checkout = {
   close() {
     const modal = document.getElementById('checkoutModal');
     if (modal) modal.style.display = 'none';
+    // Closing the modal = abandoning this attempt. Next open() gets a fresh key.
+    Checkout.idempotencyKey = null;
   },
 
   async loadSavedAddresses() {
@@ -229,12 +243,15 @@ const Checkout = {
         saveAddress: document.getElementById('co_saveAddress').checked
       };
 
-      await api.post('/orders', orderData);
+      await api.post('/orders', orderData, { 'Idempotency-Key': Checkout.idempotencyKey });
+      Checkout.idempotencyKey = null; // success — next order needs a fresh key
       Cart.clear();
       Checkout.close();
       Toast.show('🎉 Order placed successfully!');
       setTimeout(() => (window.location.href = 'profile.html'), 1500);
     } catch (err) {
+      // Don't clear the key here — if this was a network failure, retrying
+      // with the SAME key is what makes it safe against duplicate orders.
       Toast.show(err.message || 'Failed to place order.');
     }
   }
