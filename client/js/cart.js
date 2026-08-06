@@ -231,7 +231,7 @@ const Checkout = {
     e.preventDefault();
     try {
       const orderData = {
-        items: Cart.read().map((i) => ({ product: i.productId, variant: i.variantId, quantity: i.quantity })),
+        items: Cart.read().map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
         shippingAddress: {
           line1: document.getElementById('co_line1').value,
           line2: document.getElementById('co_line2').value,
