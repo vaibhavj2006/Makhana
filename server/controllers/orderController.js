@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
@@ -9,9 +10,16 @@ const FLAT_SHIPPING = 49; // INR flat rate; free above threshold
 const FREE_SHIPPING_THRESHOLD = 699;
 
 // @route POST /api/orders  (auth required)
+// Requires an "Idempotency-Key" header — the frontend generates one UUID per checkout
+// attempt (crypto.randomUUID()) and resends the SAME key on retries.
 const createOrder = asyncHandler(async (req, res) => {
   const { items, shippingAddress, paymentMethod, saveAddress } = req.body;
+  const idempotencyKey = req.headers['idempotency-key'];
 
+  if (!idempotencyKey) {
+    res.status(400);
+    throw new Error('Idempotency-Key header is required.');
+  }
   if (!items || !items.length) {
     res.status(400);
     throw new Error('Your cart is empty.');
@@ -21,82 +29,119 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new Error('Shipping address is required.');
   }
 
-  // Re-price server-side from the DB — never trust client-sent prices.
-  const orderItems = [];
-  let itemsPrice = 0;
-
-  for (const line of items) {
-    const product = await Product.findById(line.productId);
-    if (!product || !product.isActive) {
-      res.status(400);
-      throw new Error(`Product no longer available.`);
-    }
-    const variant = product.variants.id(line.variantId);
-    if (!variant) {
-      res.status(400);
-      throw new Error(`Selected size for "${product.name}" is no longer available.`);
-    }
-    if (variant.stock < line.quantity) {
-      res.status(400);
-      throw new Error(`Only ${variant.stock} left in stock for ${product.name} (${variant.label}).`);
-    }
-
-    orderItems.push({
-      product: product._id,
-      name: product.name,
-      variantLabel: variant.label,
-      sku: variant.sku,
-      image: product.images[0],
-      price: variant.price,
-      quantity: line.quantity
-    });
-    itemsPrice += variant.price * line.quantity;
-
-    variant.stock -= line.quantity;
-    await product.save();
+  // If this exact checkout attempt already went through (retry, double-click,
+  // flaky network), just return the order that was already created.
+  const existing = await Order.findOne({ idempotencyKey });
+  if (existing) {
+    return res.status(200).json({ success: true, order: existing, duplicate: true });
   }
 
-  const shippingPrice = itemsPrice >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
-  const totalPrice = itemsPrice + shippingPrice;
+  const session = await mongoose.startSession();
+  let order;
 
-  const order = await Order.create({
-    user: req.user._id,
-    items: orderItems,
-    shippingAddress,
-    paymentMethod: paymentMethod || 'cod',
-    itemsPrice,
-    shippingPrice,
-    totalPrice
-  });
+  try {
+    await session.withTransaction(async () => {
+      // Re-price server-side from the DB — never trust client-sent prices.
+      const orderItems = [];
+      let itemsPrice = 0;
 
-  // Optional: shopper checked "save this address" at checkout — add it to their address book.
-  // Never overwrites/removes existing addresses; just appends and only sets default if they have none yet.
-  if (saveAddress) {
-    const user = await User.findById(req.user._id);
-    const alreadySaved = user.addresses.some(
-      (a) =>
-        a.line1 === shippingAddress.line1 &&
-        a.pincode === shippingAddress.pincode &&
-        a.phone === shippingAddress.phone
-    );
-    if (!alreadySaved) {
-      user.addresses.push({
-        label: shippingAddress.label || 'Home',
-        line1: shippingAddress.line1,
-        line2: shippingAddress.line2,
-        city: shippingAddress.city,
-        state: shippingAddress.state,
-        pincode: shippingAddress.pincode,
-        country: shippingAddress.country || 'India',
-        phone: shippingAddress.phone,
-        isDefault: user.addresses.length === 0
-      });
-      await user.save();
+      for (const line of items) {
+        const product = await Product.findById(line.productId).session(session);
+        if (!product || !product.isActive) {
+          throw Object.assign(new Error('Product no longer available.'), { statusCode: 400 });
+        }
+        const variant = product.variants.id(line.variantId);
+        if (!variant) {
+          throw Object.assign(
+            new Error(`Selected size for "${product.name}" is no longer available.`),
+            { statusCode: 400 }
+          );
+        }
+        if (variant.stock < line.quantity) {
+          throw Object.assign(
+            new Error(`Only ${variant.stock} left in stock for ${product.name} (${variant.label}).`),
+            { statusCode: 409 } // 409 Conflict — frontend can special-case this for a "sold out" message
+          );
+        }
+
+        orderItems.push({
+          product: product._id,
+          name: product.name,
+          variantLabel: variant.label,
+          sku: variant.sku,
+          image: product.images[0],
+          price: variant.price,
+          quantity: line.quantity
+        });
+        itemsPrice += variant.price * line.quantity;
+
+        variant.stock -= line.quantity;
+        await product.save({ session });
+      }
+
+      const shippingPrice = itemsPrice >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
+      const totalPrice = itemsPrice + shippingPrice;
+
+      const created = await Order.create(
+        [
+          {
+            user: req.user._id,
+            items: orderItems,
+            shippingAddress,
+            paymentMethod: paymentMethod || 'cod',
+            itemsPrice,
+            shippingPrice,
+            totalPrice,
+            idempotencyKey,
+            statusHistory: [{ status: 'pending', changedBy: req.user._id }]
+          }
+        ],
+        { session }
+      );
+      order = created[0];
+
+      // Optional: shopper checked "save this address" at checkout.
+      // Never overwrites/removes existing addresses; just appends.
+      if (saveAddress) {
+        const user = await User.findById(req.user._id).session(session);
+        const alreadySaved = user.addresses.some(
+          (a) =>
+            a.line1 === shippingAddress.line1 &&
+            a.pincode === shippingAddress.pincode &&
+            a.phone === shippingAddress.phone
+        );
+        if (!alreadySaved) {
+          user.addresses.push({
+            label: shippingAddress.label || 'Home',
+            line1: shippingAddress.line1,
+            line2: shippingAddress.line2,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            pincode: shippingAddress.pincode,
+            country: shippingAddress.country || 'India',
+            phone: shippingAddress.phone,
+            isDefault: user.addresses.length === 0
+          });
+          await user.save({ session });
+        }
+      }
+    });
+  } catch (err) {
+    // Two concurrent requests with the same key both passed the findOne check above,
+    // then raced on the unique index — the loser lands here. Return the winner's order.
+    if (err.code === 11000 && err.keyPattern?.idempotencyKey) {
+      const winner = await Order.findOne({ idempotencyKey });
+      if (winner) {
+        return res.status(200).json({ success: true, order: winner, duplicate: true });
+      }
     }
+    res.status(err.statusCode || 500);
+    throw err;
+  } finally {
+    session.endSession();
   }
 
   // Fire-and-forget: don't make checkout wait on (or fail because of) email delivery.
-  // Order confirmations respect the user's own preference (defaults to on, but they can turn it off in Settings).
   if (req.user.preferences?.emailOptIn?.orderUpdates !== false) {
     sendEmail({
       to: req.user.email,
@@ -147,6 +192,11 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
   order.status = status;
   if (status === 'delivered') order.deliveredAt = new Date();
+
+  // Audit trail — who changed it, when.
+  order.statusHistory = order.statusHistory || [];
+  order.statusHistory.push({ status, changedBy: req.user._id, changedAt: new Date() });
+
   await order.save();
 
   const wantsOrderEmails = order.user?.preferences?.emailOptIn?.orderUpdates !== false;
