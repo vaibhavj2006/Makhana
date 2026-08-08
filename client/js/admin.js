@@ -1,4 +1,5 @@
 let adminProducts = [];
+let adminOrders = [];
 let variantRowCount = 0;
 
 async function guardAdminAccess() {
@@ -8,8 +9,14 @@ async function guardAdminAccess() {
     document.getElementById('adminView').style.display = 'block';
     loadAdminProducts();
     loadAdminOrders();
-  } catch {
-    document.getElementById('guardView').style.display = 'block';
+  } catch (err) {
+    // Surface the real reason instead of a silent generic guard —
+    // check this text (and the Network tab) to see what's actually failing.
+    console.error('Admin access check failed:', err);
+    const guard = document.getElementById('guardView');
+    const detail = document.getElementById('guardErrorDetail');
+    if (detail) detail.textContent = `Debug: ${err.message}`;
+    guard.style.display = 'block';
   }
 }
 
@@ -163,6 +170,7 @@ async function loadAdminOrders() {
   const body = document.getElementById('ordersTableBody');
   try {
     const { orders } = await api.get('/orders');
+    adminOrders = orders;
     body.innerHTML = orders.length
       ? orders
           .map(
@@ -180,12 +188,13 @@ async function loadAdminOrders() {
               .join('')}
           </select>
         </td>
+        <td><button class="btn btn-outline btn-sm" onclick="openOrderDetail('${o._id}')">View</button></td>
       </tr>`
           )
           .join('')
-      : '<tr><td colspan="6">No orders yet.</td></tr>';
+      : '<tr><td colspan="7">No orders yet.</td></tr>';
   } catch (err) {
-    body.innerHTML = `<tr><td colspan="6">Couldn't load orders (${err.message})</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7">Couldn't load orders (${err.message})</td></tr>`;
   }
 }
 
@@ -193,9 +202,63 @@ async function updateOrderStatus(orderId, status) {
   try {
     await api.put(`/orders/${orderId}/status`, { status });
     Toast.show('Order status updated.');
+    // Keep the detail modal's history in sync if it happens to be open on this order.
+    const modal = document.getElementById('orderDetailModal');
+    if (modal.classList.contains('open') && modal.dataset.orderId === orderId) {
+      openOrderDetail(orderId);
+    }
   } catch (err) {
     Toast.show(err.message);
   }
+}
+
+// Fetches the single order fresh (rather than reusing the list row) so the
+// statusHistory array — not included in the list view — is guaranteed present.
+async function openOrderDetail(orderId) {
+  const modal = document.getElementById('orderDetailModal');
+  const body = document.getElementById('orderDetailBody');
+  modal.dataset.orderId = orderId;
+  body.innerHTML = 'Loading…';
+  modal.classList.add('open');
+
+  try {
+    const { order } = await api.get(`/orders/${orderId}`);
+    const history = order.statusHistory || [];
+
+    body.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <strong>Order #${order._id.slice(-6).toUpperCase()}</strong><br>
+        <span style="color:var(--ink-soft); font-size:0.85rem;">
+          ${order.user?.name || 'N/A'} · ${order.user?.email || ''}
+        </span>
+      </div>
+      <div style="margin-bottom:16px;">
+        <strong>Status history</strong>
+        ${
+          history.length
+            ? `<ul style="margin:8px 0 0; padding-left:18px; font-size:0.88rem;">
+                ${history
+                  .slice()
+                  .reverse()
+                  .map(
+                    (h) => `<li style="margin-bottom:6px;">
+                      <strong>${h.status}</strong>
+                      — ${new Date(h.changedAt).toLocaleString()}
+                    </li>`
+                  )
+                  .join('')}
+               </ul>`
+            : `<p style="color:var(--ink-soft); font-size:0.85rem;">No history recorded yet.</p>`
+        }
+      </div>
+    `;
+  } catch (err) {
+    body.innerHTML = `<p>Couldn't load order (${err.message})</p>`;
+  }
+}
+
+function closeOrderDetail() {
+  document.getElementById('orderDetailModal').classList.remove('open');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -205,6 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('productForm').addEventListener('submit', submitProductForm);
   document.getElementById('productModal').addEventListener('click', (e) => {
     if (e.target.id === 'productModal') closeProductModal();
+  });
+  document.getElementById('orderDetailModal').addEventListener('click', (e) => {
+    if (e.target.id === 'orderDetailModal') closeOrderDetail();
   });
 
   document.querySelectorAll('.admin-tab-btn').forEach((btn) => {

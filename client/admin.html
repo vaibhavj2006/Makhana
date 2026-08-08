@@ -35,6 +35,8 @@
   <h2 style="margin-bottom:12px;">This page is for shop admins only</h2>
   <p style="margin-bottom:20px;">Log in with an admin account to manage products and orders.</p>
   <a href="profile.html" class="btn btn-primary">Go to login</a>
+  <!-- Temporary debug line — shows the real reason the guard fired. Remove once the root cause is fixed. -->
+  <p id="guardErrorDetail" style="margin-top:16px; font-size:0.78rem; color:var(--ink-soft);"></p>
 </div>
 
 <section class="section" id="adminView" style="display:none; padding-top:40px;">
@@ -69,10 +71,10 @@
       <div style="overflow-x:auto;">
         <table class="admin-table">
           <thead>
-            <tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Placed</th><th>Status</th></tr>
+            <tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Placed</th><th>Status</th><th></th></tr>
           </thead>
           <tbody id="ordersTableBody">
-            <tr><td colspan="6">Loading orders…</td></tr>
+            <tr><td colspan="7">Loading orders…</td></tr>
           </tbody>
         </table>
       </div>
@@ -124,6 +126,17 @@
 
       <button class="btn btn-primary btn-block" type="submit" style="margin-top:10px;">Save product</button>
     </form>
+  </div>
+</div>
+
+<!-- Order detail modal: shows statusHistory -->
+<div class="modal-overlay" id="orderDetailModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 class="display" style="font-size:1.3rem;">Order detail</h3>
+      <button class="icon-btn" onclick="closeOrderDetail()" aria-label="Close">✕</button>
+    </div>
+    <div id="orderDetailBody">Loading…</div>
   </div>
 </div>
 
