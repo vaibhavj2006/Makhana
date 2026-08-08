@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Product = require('../models/Product');
+const { clearProductsCache } = require('../middleware/cache');
 
 // @route GET /api/products
 // Supports: ?search=&category=&flavor=&sort=price_asc|price_desc|rating|newest&page=&limit=
@@ -82,6 +83,10 @@ const addReview = asyncHandler(async (req, res) => {
   product.recomputeRating();
   await product.save();
 
+  // A new review changes ratingAvg/ratingCount, which is visible on the
+  // cached listing/featured responses too — clear so it shows up right away.
+  clearProductsCache();
+
   res.status(201).json({ success: true, message: 'Review added.', product });
 });
 
@@ -89,6 +94,9 @@ const addReview = asyncHandler(async (req, res) => {
 
 // @route GET /api/products/admin/all
 // Returns every product (including inactive ones) for the admin dashboard.
+// Deliberately NOT cached — admins need to see writes immediately, and this
+// route is low-traffic (only hit by the admin dashboard), so caching it buys
+// nothing.
 const getAllProductsAdmin = asyncHandler(async (req, res) => {
   const products = await Product.find().sort({ createdAt: -1 });
   res.json({ success: true, products });
@@ -96,8 +104,8 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
 
 // @route POST /api/products
 const createProduct = asyncHandler(async (req, res) => {
-
   const product = await Product.create(req.body);
+  clearProductsCache();
   res.status(201).json({ success: true, product });
 });
 
@@ -111,6 +119,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found.');
   }
+  clearProductsCache();
   res.json({ success: true, product });
 });
 
@@ -121,6 +130,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found.');
   }
+  clearProductsCache();
   res.json({ success: true, message: 'Product deleted.' });
 });
 
