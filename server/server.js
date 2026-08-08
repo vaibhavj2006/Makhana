@@ -36,7 +36,7 @@ app.use(
   })
 );
 
-// Stripe & Razorpay webhooks need the RAW request body to verify
+// Razorpay webhooks need the RAW request body to verify
 // signatures — this MUST be mounted before express.json() below,
 // or signature verification will always fail.
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentWebhookRoutes);

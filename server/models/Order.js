@@ -34,9 +34,9 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: { type: String, enum: ['cod', 'card', 'upi'], default: 'cod' },
 
     // --- Payment gateway tracking (added for Phase 2) ---
-    paymentGateway: { type: String, enum: ['stripe', 'razorpay', null], default: null },
-    gatewayOrderId: { type: String }, // Stripe session id OR Razorpay order id
-    gatewayPaymentId: { type: String }, // Stripe payment_intent OR Razorpay payment id
+    paymentGateway: { type: String, enum: ['razorpay', null], default: null },
+    gatewayOrderId: { type: String }, // Razorpay order id
+    gatewayPaymentId: { type: String }, // Razorpay payment id
     paymentStatus: {
       type: String,
       enum: ['pending', 'paid', 'failed', 'refunded'],
