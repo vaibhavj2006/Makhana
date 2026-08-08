@@ -3,10 +3,10 @@ const RecentlyViewed = require('../models/RecentlyViewed');
 
 const MAX_ITEMS = 20;
 
+// req.user is set by attachUserIfPresent when a valid session cookie is present;
+// req.guestId is always set by the global guestId middleware. Logged-in visitors
+// always resolve to their userId, guests fall back to their guest cookie.
 function getIdentifier(req) {
-  // TODO once middleware/auth.js is confirmed: if you have an optional-auth
-  // middleware that sets req.user without requiring a token, prefer that here:
-  // return req.user ? req.user._id.toString() : req.guestId;
   return (req.user && req.user._id.toString()) || req.guestId;
 }
 
@@ -50,9 +50,6 @@ const getRecentlyViewed = asyncHandler(async (req, res) => {
 // Called from authController on login/google-login to merge guest history into the user.
 async function mergeGuestHistory(guestIdValue, userId) {
   if (!guestIdValue) return;
-  // Move each guest row onto the user's identifier; if the user already has
-  // a row for that product, the guest row would collide with the unique
-  // index, so those are just dropped instead of erroring the login.
   const guestRows = await RecentlyViewed.find({ identifier: guestIdValue });
   for (const row of guestRows) {
     await RecentlyViewed.updateOne(

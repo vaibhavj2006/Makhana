@@ -24,9 +24,16 @@ async function loadProductDetail() {
     document.getElementById('pageTitle').textContent = `${product.name} — Pond & Puff`;
     renderProductDetail(product);
     loadRecommendations(product);
+    recordProductView(product._id);
   } catch (err) {
     root.innerHTML = `<p>Couldn't load this product (${err.message}). <a href="shop.html">Back to shop</a></p>`;
   }
+}
+
+// Fire-and-forget — a failed view-tracking call should never block or break
+// the page the shopper is actually trying to look at.
+function recordProductView(productId) {
+  api.post(`/products/${productId}/view`, {}).catch(() => {});
 }
 
 function renderProductDetail(p) {

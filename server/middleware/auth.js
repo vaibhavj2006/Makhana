@@ -39,4 +39,30 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, adminOnly };
+// Like protect, but never blocks the request. If a valid token is present,
+// req.user gets set; if not (guest, expired, missing, malformed) the request
+// just continues with req.user left undefined. Use this on routes that need
+// to work for both guests and logged-in users — e.g. recently-viewed tracking.
+const attachUserIfPresent = asyncHandler(async (req, res, next) => {
+  const cookieName = process.env.COOKIE_NAME || 'mk_token';
+  let token = req.cookies?.[cookieName];
+
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) return next();
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (user && user.isActive) {
+      req.user = user;
+    }
+  } catch {
+    // invalid/expired token — just proceed as a guest, don't error
+  }
+  next();
+});
+
+module.exports = { protect, adminOnly, attachUserIfPresent };
