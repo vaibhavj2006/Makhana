@@ -4,6 +4,8 @@ const User = require('../models/User');
 const { sendTokenCookie } = require('../utils/generateToken');
 const { sendEmail } = require('../utils/sendEmail');
 const { welcomeEmail } = require('../utils/emailTemplates');
+const { mergeGuestHistory } = require('./recentlyViewedController');
+const { GUEST_COOKIE_NAME } = require('../middleware/guestId');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -62,6 +64,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
   user.lastLoginAt = new Date();
   await user.save({ validateBeforeSave: false });
+
+  // Merge this browser's guest recently-viewed history into the now-known user.
+  if (req.cookies[GUEST_COOKIE_NAME]) {
+    await mergeGuestHistory(req.cookies[GUEST_COOKIE_NAME], user._id);
+  }
 
   sendTokenCookie(res, user._id, user.role);
   res.json({ success: true, user: user.toSafeObject() });
@@ -130,6 +137,11 @@ const googleLogin = asyncHandler(async (req, res) => {
 
   user.lastLoginAt = new Date();
   await user.save({ validateBeforeSave: false });
+
+  // Merge this browser's guest recently-viewed history into the now-known user.
+  if (req.cookies[GUEST_COOKIE_NAME]) {
+    await mergeGuestHistory(req.cookies[GUEST_COOKIE_NAME], user._id);
+  }
 
   sendTokenCookie(res, user._id, user.role);
   res.json({ success: true, user: user.toSafeObject() });

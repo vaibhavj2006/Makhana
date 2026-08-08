@@ -8,9 +8,11 @@ const path = require('path');
 
 const { connectDB } = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
+const { guestId } = require('./middleware/guestId');
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
+const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes');
 const addressRoutes = require('./routes/addressRoutes');
@@ -35,8 +37,15 @@ app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
+// Assigns req.guestId for anonymous visitors — needed before recentlyViewedRoutes.
+app.use(guestId);
+
 // --- API routes ---
 app.use('/api/auth', authRoutes);
+// recentlyViewedRoutes MUST come before productRoutes: it owns
+// GET /api/products/recently-viewed, which productRoutes' GET /:slug
+// would otherwise swallow.
+app.use('/api/products', recentlyViewedRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
