@@ -18,17 +18,24 @@ function injectCartDrawer() {
     <aside class="cart-drawer" id="checkoutDrawer" aria-label="Checkout">
       <div class="cart-head">
         <h3 class="display" style="font-size:1.3rem;">Checkout</h3>
-        <button class="icon-btn" onclick="Checkout.close()" aria-label="Close checkout">✕</button>
+        <button class="icon-btn" onclick="DrawerCheckout.close()" aria-label="Close checkout">✕</button>
       </div>
       <div class="cart-items" id="checkoutBody"></div>
     </aside>
   `;
   document.body.appendChild(wrap);
   applyTranslations();
-  document.getElementById('checkoutOverlay').addEventListener('click', () => Checkout.close());
+  document.getElementById('checkoutOverlay').addEventListener('click', () => DrawerCheckout.close());
 }
 
-const Checkout = {
+// NOTE: renamed from `Checkout` to `DrawerCheckout` — cart.js ALSO declares a
+// top-level `const Checkout`, and two same-named top-level const declarations
+// across separate <script> tags throw a SyntaxError that silently kills this
+// entire file (including injectCartDrawer() and refreshNavAuthState() below).
+// This object is currently unused elsewhere; the active checkout flow is the
+// modal-based Checkout in cart.js. Kept here (renamed) rather than deleted in
+// case the location-autofill flow is still wanted later.
+const DrawerCheckout = {
   async open() {
     injectCartDrawer();
     Cart.close();
