@@ -16,6 +16,8 @@ const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes');
 const addressRoutes = require('./routes/addressRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const paymentWebhookRoutes = require('./routes/paymentWebhookRoutes');
 
 connectDB();
 
@@ -33,6 +35,12 @@ app.use(
     credentials: true
   })
 );
+
+// Stripe & Razorpay webhooks need the RAW request body to verify
+// signatures — this MUST be mounted before express.json() below,
+// or signature verification will always fail.
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentWebhookRoutes);
+
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
@@ -50,6 +58,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'API is running.' }));
 

@@ -167,7 +167,22 @@ const Checkout = {
             </label>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block">Place Order (₹${Cart.subtotal() >= 699 ? Cart.subtotal() : Cart.subtotal() + 49})</button>
+          <div style="margin:16px 0;">
+            <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:8px;">Payment Method</label>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
+                <input type="radio" name="co_paymentMethod" value="upi" checked /> UPI (Google Pay, PhonePe, Paytm, etc.)
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
+                <input type="radio" name="co_paymentMethod" value="card" /> Card (Debit/Credit)
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
+                <input type="radio" name="co_paymentMethod" value="cod" /> Cash on Delivery
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="checkoutSubmitBtn">Place Order (₹${Cart.subtotal() >= 699 ? Cart.subtotal() : Cart.subtotal() + 49})</button>
         </form>
       </div>
     `;
@@ -229,7 +244,15 @@ const Checkout = {
 
   async submitOrder(e) {
     e.preventDefault();
+    const submitBtn = document.getElementById('checkoutSubmitBtn');
+    const paymentMethod = document.querySelector('input[name="co_paymentMethod"]:checked')?.value || 'cod';
+
     try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Placing order…';
+      }
+
       const orderData = {
         items: Cart.read().map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
         shippingAddress: {
@@ -240,20 +263,92 @@ const Checkout = {
           pincode: document.getElementById('co_pincode').value,
           phone: document.getElementById('co_phone').value
         },
-        saveAddress: document.getElementById('co_saveAddress').checked
+        saveAddress: document.getElementById('co_saveAddress').checked,
+        paymentMethod
       };
 
-      await api.post('/orders', orderData, { 'Idempotency-Key': Checkout.idempotencyKey });
-      Checkout.idempotencyKey = null; // success — next order needs a fresh key
+      const { order } = await api.post('/orders', orderData, { 'Idempotency-Key': Checkout.idempotencyKey });
+      Checkout.idempotencyKey = null; // order created — next attempt (if any) needs a fresh key
       Cart.clear();
       Checkout.close();
-      Toast.show('🎉 Order placed successfully!');
-      setTimeout(() => (window.location.href = 'profile.html'), 1500);
+
+      if (paymentMethod === 'cod') {
+        Toast.show('🎉 Order placed successfully!');
+        setTimeout(() => (window.location.href = 'profile.html'), 1500);
+        return;
+      }
+
+      // card -> Stripe, upi -> Razorpay
+      const gateway = paymentMethod === 'card' ? 'stripe' : 'razorpay';
+      await Checkout.startPayment(order._id, gateway);
     } catch (err) {
-      // Don't clear the key here — if this was a network failure, retrying
-      // with the SAME key is what makes it safe against duplicate orders.
+      // Don't clear the key here — if this was a network failure before the
+      // order was created, retrying with the SAME key is what makes it safe
+      // against duplicate orders.
       Toast.show(err.message || 'Failed to place order.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = `Place Order (₹${Cart.subtotal() >= 699 ? Cart.subtotal() : Cart.subtotal() + 49})`;
+      }
     }
+  },
+
+  // --- Payment handoff (Phase 2) ---
+
+  async startPayment(orderId, gateway) {
+    try {
+      const data = await api.post('/payments/create-order', { orderId, gateway });
+
+      if (gateway === 'stripe') {
+        window.location.href = data.url; // hosted Stripe Checkout page
+        return;
+      }
+
+      Checkout.openRazorpayWidget(data, orderId);
+    } catch (err) {
+      Toast.show(err.message || 'Could not start payment. Your order is saved — try paying again from your profile.');
+      setTimeout(() => (window.location.href = 'profile.html'), 1800);
+    }
+  },
+
+  openRazorpayWidget(data, orderId) {
+    if (typeof Razorpay === 'undefined') {
+      Toast.show('Payment widget failed to load. Check your connection and try again.');
+      return;
+    }
+
+    const rzp = new Razorpay({
+      key: data.keyId,
+      amount: data.amount,
+      currency: data.currency,
+      name: 'Makhana Shop',
+      description: 'Order Payment',
+      order_id: data.razorpayOrderId,
+      handler: async function (response) {
+        try {
+          await api.post('/payments/verify', {
+            orderId,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            paymentMethod: 'upi'
+          });
+          Toast.show('🎉 Payment successful!');
+          setTimeout(() => (window.location.href = 'profile.html'), 1500);
+        } catch (err) {
+          Toast.show(err.message || 'Payment verification failed. Contact support if money was deducted.');
+        }
+      },
+      theme: { color: '#2e7d32' },
+      modal: {
+        ondismiss: function () {
+          Toast.show('Payment cancelled. Your order is saved — pay anytime from your profile.');
+        }
+      }
+    });
+
+    rzp.open();
   }
 };
 
