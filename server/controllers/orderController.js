@@ -8,6 +8,7 @@ const { orderConfirmationEmail } = require('../utils/emailTemplates');
 
 const FLAT_SHIPPING = 49; // INR flat rate; free above threshold
 const FREE_SHIPPING_THRESHOLD = 699;
+const PAYMENT_WINDOW_MINUTES = 15; // how long stock stays reserved for an unpaid online order
 
 // @route POST /api/orders  (auth required)
 // Requires an "Idempotency-Key" header — the frontend generates one UUID per checkout
@@ -81,6 +82,15 @@ const createOrder = asyncHandler(async (req, res) => {
 
       const shippingPrice = itemsPrice >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
       const totalPrice = itemsPrice + shippingPrice;
+      const method = paymentMethod || 'cod';
+
+      // Online-payment orders get a deadline — stock is already decremented
+      // above, so if payment doesn't complete in time, releaseExpiredOrders.js
+      // will cancel this order and put the stock back.
+      const paymentDeadline =
+        method === 'upi' || method === 'card'
+          ? new Date(Date.now() + PAYMENT_WINDOW_MINUTES * 60 * 1000)
+          : undefined;
 
       const created = await Order.create(
         [
@@ -88,7 +98,8 @@ const createOrder = asyncHandler(async (req, res) => {
             user: req.user._id,
             items: orderItems,
             shippingAddress,
-            paymentMethod: paymentMethod || 'cod',
+            paymentMethod: method,
+            paymentDeadline,
             itemsPrice,
             shippingPrice,
             totalPrice,

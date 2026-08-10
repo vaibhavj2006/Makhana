@@ -9,6 +9,7 @@ const path = require('path');
 const { connectDB } = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { guestId } = require('./middleware/guestId');
+const { scheduleReleaseExpiredOrders } = require('./jobs/releaseExpiredOrders');
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -20,6 +21,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const paymentWebhookRoutes = require('./routes/paymentWebhookRoutes');
 
 connectDB();
+scheduleReleaseExpiredOrders();
 
 const app = express();
 

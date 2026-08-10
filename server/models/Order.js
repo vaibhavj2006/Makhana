@@ -26,6 +26,15 @@ const shippingAddressSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const statusHistoryEntrySchema = new mongoose.Schema(
+  {
+    status: { type: String, required: true },
+    changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    changedAt: { type: Date, default: Date.now }
+  },
+  { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -33,15 +42,28 @@ const orderSchema = new mongoose.Schema(
     shippingAddress: { type: shippingAddressSchema, required: true },
     paymentMethod: { type: String, enum: ['cod', 'card', 'upi'], default: 'cod' },
 
-    // --- Payment gateway tracking (added for Phase 2) ---
+    // --- Idempotency & audit (was silently missing — orderController.js
+    // referenced these fields but they were never declared, so they were
+    // silently dropped on every save; retries were NOT actually deduped) ---
+    idempotencyKey: { type: String, unique: true, sparse: true, index: true },
+    statusHistory: { type: [statusHistoryEntrySchema], default: [] },
+
+    // --- Payment gateway tracking (Phase 2) ---
     paymentGateway: { type: String, enum: ['razorpay', null], default: null },
-    gatewayOrderId: { type: String }, // Razorpay order id
-    gatewayPaymentId: { type: String }, // Razorpay payment id
+    gatewayOrderId: { type: String },
+    gatewayPaymentId: { type: String },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'paid', 'failed', 'refunded'],
+      enum: ['pending', 'paid', 'failed', 'refunded', 'expired'],
       default: 'pending'
     },
+
+    // --- Stock reservation cleanup (Phase 3, item 7) ---
+    // Only set for online-payment orders (upi/card). Stock is decremented at
+    // order-creation time (see orderController.js), so if payment isn't
+    // completed by this deadline, releaseExpiredOrders.js cancels the order
+    // and restores stock.
+    paymentDeadline: { type: Date },
 
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true, default: 0 },
