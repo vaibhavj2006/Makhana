@@ -60,8 +60,11 @@ const verifyPayment = async (req, res, next) => {
     order.isPaid = true;
     order.paidAt = new Date();
     order.paymentStatus = 'paid';
+    order.status = 'confirmed';
     order.gatewayPaymentId = razorpay_payment_id;
     if (paymentMethod === 'upi' || paymentMethod === 'card') order.paymentMethod = paymentMethod;
+    order.statusHistory = order.statusHistory || [];
+    order.statusHistory.push({ status: 'confirmed', changedAt: new Date() });
     await order.save();
 
     res.json({ success: true, message: 'Payment verified.' });
@@ -90,8 +93,11 @@ const razorpayWebhook = async (req, res) => {
       order.isPaid = true;
       order.paidAt = new Date();
       order.paymentStatus = 'paid';
+      order.status = 'confirmed';
       order.gatewayPaymentId = payment.id;
       order.paymentMethod = payment.method === 'upi' ? 'upi' : 'card';
+      order.statusHistory = order.statusHistory || [];
+      order.statusHistory.push({ status: 'confirmed', changedAt: new Date() });
       await order.save();
     }
   }

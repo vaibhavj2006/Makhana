@@ -171,10 +171,7 @@ const Checkout = {
             <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:8px;">Payment Method</label>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
-                <input type="radio" name="co_paymentMethod" value="upi" checked /> UPI (Google Pay, PhonePe, Paytm, etc.)
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
-                <input type="radio" name="co_paymentMethod" value="card" /> Card (Debit/Credit)
+                <input type="radio" name="co_paymentMethod" value="online" checked /> Pay Online (UPI, Card, Netbanking)
               </label>
               <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
                 <input type="radio" name="co_paymentMethod" value="cod" /> Cash on Delivery
@@ -278,9 +275,8 @@ const Checkout = {
         return;
       }
 
-      // card -> Stripe, upi -> Razorpay
-      const gateway = paymentMethod === 'card' ? 'stripe' : 'razorpay';
-      await Checkout.startPayment(order._id, gateway);
+      // Both "card" and "upi" go through Razorpay — its widget shows both anyway.
+      await Checkout.startPayment(order._id);
     } catch (err) {
       // Don't clear the key here — if this was a network failure before the
       // order was created, retrying with the SAME key is what makes it safe
@@ -296,15 +292,9 @@ const Checkout = {
 
   // --- Payment handoff (Phase 2) ---
 
-  async startPayment(orderId, gateway) {
+  async startPayment(orderId) {
     try {
-      const data = await api.post('/payments/create-order', { orderId, gateway });
-
-      if (gateway === 'stripe') {
-        window.location.href = data.url; // hosted Stripe Checkout page
-        return;
-      }
-
+      const data = await api.post('/payments/create-order', { orderId });
       Checkout.openRazorpayWidget(data, orderId);
     } catch (err) {
       Toast.show(err.message || 'Could not start payment. Your order is saved — try paying again from your profile.');
@@ -334,10 +324,17 @@ const Checkout = {
             razorpay_signature: response.razorpay_signature,
             paymentMethod: 'upi'
           });
-          Toast.show('🎉 Payment successful!');
-          setTimeout(() => (window.location.href = 'profile.html'), 1500);
+          // Verify already confirmed it server-side, but route through the
+          // processing page anyway — keeps one consistent "confirming…"
+          // experience whether verify was instant or the webhook has to
+          // catch up (e.g. verify request itself dropped after payment).
+          window.location.href = `order-processing.html?orderId=${orderId}`;
         } catch (err) {
-          Toast.show(err.message || 'Payment verification failed. Contact support if money was deducted.');
+          // verify() failed client-side (network blip, tab closing, etc.) —
+          // the webhook may still confirm it server-side shortly after.
+          // Send them to the polling page instead of just showing an error;
+          // it'll pick up the confirmation once the webhook lands.
+          window.location.href = `order-processing.html?orderId=${orderId}`;
         }
       },
       theme: { color: '#2e7d32' },
