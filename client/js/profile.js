@@ -87,19 +87,42 @@ async function loadOrders() {
       return;
     }
     el.innerHTML = orders
-      .map(
-        (o) => `
+      .map((o) => {
+        // Matches the backend's own cancel eligibility check exactly —
+        // only show the button when the request would actually succeed.
+        const canCancel = o.status === 'pending' && !o.isPaid;
+
+        return `
       <div class="order-row">
         <div>
           <strong>Order #${o._id.slice(-6).toUpperCase()}</strong>
           <p style="margin:4px 0 0; font-size:0.85rem;">${new Date(o.createdAt).toLocaleDateString()} · ${o.items.length} item(s) · ₹${o.totalPrice}</p>
         </div>
-        <span class="status-chip ${o.status}">${o.status}</span>
-      </div>`
-      )
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="status-chip ${o.status}">${o.status}</span>
+          ${
+            canCancel
+              ? `<button class="btn btn-outline btn-sm" style="color:var(--coral); border-color:var(--coral);" onclick="cancelOrder('${o._id}')">Cancel</button>`
+              : ''
+          }
+        </div>
+      </div>`;
+      })
       .join('');
   } catch (err) {
     el.innerHTML = `<p>Couldn't load orders (${err.message}).</p>`;
+  }
+}
+
+async function cancelOrder(orderId) {
+  if (!confirm('Cancel this order? This can\'t be undone.')) return;
+
+  try {
+    await api.put(`/orders/${orderId}/cancel`);
+    Toast.show('Order cancelled.');
+    loadOrders(); // refresh the list so the status chip + button update
+  } catch (err) {
+    Toast.show(err.message || 'Could not cancel this order.');
   }
 }
 
