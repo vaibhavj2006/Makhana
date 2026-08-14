@@ -150,7 +150,17 @@ const googleLogin = asyncHandler(async (req, res) => {
 // @route POST /api/auth/logout
 const logoutUser = asyncHandler(async (req, res) => {
   const cookieName = process.env.COOKIE_NAME || 'mk_token';
-  res.clearCookie(cookieName);
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  // clearCookie must be called with the SAME options the cookie was set with
+  // (secure/sameSite) — otherwise browsers won't actually remove it, since
+  // they treat it as a different cookie. This must match sendTokenCookie()
+  // in utils/generateToken.js exactly.
+  res.clearCookie(cookieName, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
+  });
   res.json({ success: true, message: 'Logged out.' });
 });
 
