@@ -185,11 +185,68 @@ const getOrderById = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
+// @route PUT /api/orders/:id/cancel  (auth required, owner only)
+// Self-service cancellation — customer cancels their OWN pending order.
+// Restricted to orders that haven't shipped and haven't been paid for yet,
+// since there's no refund flow built — cancelling a paid order here would
+// leave money collected with no way to return it automatically. Paid orders
+// must go through support instead.
+const cancelMyOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found.');
+  }
+  if (order.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to cancel this order.');
+  }
+  if (order.status !== 'pending') {
+    res.status(400);
+    throw new Error(`Order can't be cancelled — it's already ${order.status}.`);
+  }
+  if (order.isPaid) {
+    res.status(400);
+    throw new Error('This order has already been paid. Please contact support to cancel and get a refund.');
+  }
+
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      for (const item of order.items) {
+        const product = await Product.findById(item.product).session(session);
+        if (!product) continue;
+        const variant = product.variants.find((v) => v.sku === item.sku);
+        if (variant) {
+          variant.stock += item.quantity;
+          await product.save({ session });
+        }
+      }
+
+      order.status = 'cancelled';
+      order.paymentStatus = order.paymentStatus === 'pending' ? 'expired' : order.paymentStatus;
+      order.statusHistory = order.statusHistory || [];
+      order.statusHistory.push({ status: 'cancelled', changedBy: req.user._id, changedAt: new Date() });
+      await order.save({ session });
+    });
+  } finally {
+    session.endSession();
+  }
+
+  res.json({ success: true, order, message: 'Order cancelled and stock released.' });
+});
+
 // ----- Admin only -----
 
 // @route GET /api/orders
+// Supports optional filtering: ?status=pending  ?paymentStatus=failed
+// Useful for spotting stuck/failed payments that need manual follow-up.
 const getAllOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 });
+  const filter = {};
+  if (req.query.status) filter.status = req.query.status;
+  if (req.query.paymentStatus) filter.paymentStatus = req.query.paymentStatus;
+
+  const orders = await Order.find(filter).populate('user', 'name email').sort({ createdAt: -1 });
   res.json({ success: true, orders });
 });
 
@@ -232,4 +289,4 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
-module.exports = { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus };
+module.exports = { createOrder, getMyOrders, getOrderById, cancelMyOrder, getAllOrders, updateOrderStatus };
