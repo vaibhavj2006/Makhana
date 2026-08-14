@@ -171,7 +171,7 @@ const Checkout = {
             <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:8px;">Payment Method</label>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
-                <input type="radio" name="co_paymentMethod" value="online" checked /> Pay Online (UPI, Card, Netbanking)
+                <input type="radio" name="co_paymentMethod" value="upi" checked /> Pay Online (UPI, Card, Netbanking)
               </label>
               <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;">
                 <input type="radio" name="co_paymentMethod" value="cod" /> Cash on Delivery
