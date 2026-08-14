@@ -44,4 +44,14 @@ const verifyWebhookSignature = (rawBody, signature) => {
   return expected === signature;
 };
 
-module.exports = { createOrder, verifyPaymentSignature, verifyWebhookSignature };
+/**
+ * Fetches full payment details from Razorpay — used to get the ACTUAL
+ * payment method used (card/upi/netbanking/wallet), rather than trusting
+ * whatever the frontend claims. The frontend can be wrong or manipulated;
+ * Razorpay's own record can't.
+ */
+const fetchPayment = async (paymentId) => {
+  return razorpayInstance.payments.fetch(paymentId);
+};
+
+module.exports = { createOrder, verifyPaymentSignature, verifyWebhookSignature, fetchPayment };

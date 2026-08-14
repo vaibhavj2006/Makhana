@@ -40,7 +40,7 @@ const orderSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     items: { type: [orderItemSchema], validate: (v) => v.length > 0 },
     shippingAddress: { type: shippingAddressSchema, required: true },
-    paymentMethod: { type: String, enum: ['cod', 'card', 'upi'], default: 'cod' },
+    paymentMethod: { type: String, enum: ['cod', 'card', 'upi', 'netbanking', 'wallet'], default: 'cod' },
 
     // --- Idempotency & audit (was silently missing — orderController.js
     // referenced these fields but they were never declared, so they were

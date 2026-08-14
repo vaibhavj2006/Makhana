@@ -42,7 +42,7 @@ const createPaymentOrder = async (req, res, next) => {
 // the actual source of truth and will also mark the order paid.
 const verifyPayment = async (req, res, next) => {
   try {
-    const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature, paymentMethod } = req.body;
+    const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     const isValid = razorpayService.verifyPaymentSignature({
       razorpay_order_id,
@@ -57,12 +57,25 @@ const verifyPayment = async (req, res, next) => {
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
 
+    // Ask Razorpay what method was actually used — never trust the client for this.
+    let actualMethod = order.paymentMethod;
+    try {
+      const payment = await razorpayService.fetchPayment(razorpay_payment_id);
+      if (['card', 'upi', 'netbanking', 'wallet'].includes(payment.method)) {
+        actualMethod = payment.method;
+      }
+    } catch (fetchErr) {
+      console.error('[verifyPayment] Could not fetch payment method from Razorpay:', fetchErr.message);
+      // Non-fatal — payment is still verified via signature, we just fall
+      // back to whatever paymentMethod was already on the order.
+    }
+
     order.isPaid = true;
     order.paidAt = new Date();
     order.paymentStatus = 'paid';
     order.status = 'confirmed';
     order.gatewayPaymentId = razorpay_payment_id;
-    if (paymentMethod === 'upi' || paymentMethod === 'card') order.paymentMethod = paymentMethod;
+    order.paymentMethod = actualMethod;
     order.statusHistory = order.statusHistory || [];
     order.statusHistory.push({ status: 'confirmed', changedAt: new Date() });
     await order.save();
@@ -95,7 +108,7 @@ const razorpayWebhook = async (req, res) => {
       order.paymentStatus = 'paid';
       order.status = 'confirmed';
       order.gatewayPaymentId = payment.id;
-      order.paymentMethod = payment.method === 'upi' ? 'upi' : 'card';
+      order.paymentMethod = ['card', 'upi', 'netbanking', 'wallet'].includes(payment.method) ? payment.method : order.paymentMethod;
       order.statusHistory = order.statusHistory || [];
       order.statusHistory.push({ status: 'confirmed', changedAt: new Date() });
       await order.save();

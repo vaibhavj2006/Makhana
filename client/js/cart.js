@@ -321,8 +321,7 @@ const Checkout = {
             orderId,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            paymentMethod: 'upi'
+            razorpay_signature: response.razorpay_signature
           });
           // Verify already confirmed it server-side, but route through the
           // processing page anyway — keeps one consistent "confirming…"
