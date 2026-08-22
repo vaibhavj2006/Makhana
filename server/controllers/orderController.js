@@ -5,6 +5,7 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const { sendEmail } = require('../utils/sendEmail');
 const { orderConfirmationEmail } = require('../utils/emailTemplates');
+const shiprocket = require('../services/shiprocketService');
 
 const FLAT_SHIPPING = 49; // INR flat rate; free above threshold
 const FREE_SHIPPING_THRESHOLD = 699;
@@ -251,6 +252,12 @@ const getAllOrders = asyncHandler(async (req, res) => {
 });
 
 // @route PUT /api/orders/:id/status
+// NOTE: when status transitions to 'confirmed', this now creates the
+// Shiprocket order (getting a shipment_id). When it transitions to
+// 'shipped', it assigns a courier + AWB. If either Shiprocket call fails,
+// the status change to your DB still succeeds — the failure is recorded on
+// order.shipping.lastError so it's visible to admins, rather than blocking
+// order management because a third-party API hiccuped.
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   const order = await Order.findById(req.params.id).populate('user', 'name email preferences');
@@ -258,12 +265,55 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found.');
   }
+
+  const previousStatus = order.status;
   order.status = status;
   if (status === 'delivered') order.deliveredAt = new Date();
 
-  // Audit trail — who changed it, when.
   order.statusHistory = order.statusHistory || [];
   order.statusHistory.push({ status, changedBy: req.user._id, changedAt: new Date() });
+
+  // --- Shiprocket: create order on confirmation ---
+  if (status === 'confirmed' && previousStatus !== 'confirmed' && !order.shipping?.shiprocketOrderId) {
+    try {
+      const srResponse = await shiprocket.createOrder(order);
+      order.shipping.shiprocketOrderId = srResponse.order_id;
+      order.shipping.shipmentId = srResponse.shipment_id;
+      order.shipping.lastError = undefined;
+    } catch (err) {
+      console.error(`Shiprocket createOrder failed for order ${order._id}:`, err.message);
+      order.shipping.lastError = `createOrder: ${err.message}`;
+    }
+  }
+
+  // --- Shiprocket: assign courier + AWB when marked shipped ---
+  if (status === 'shipped' && !order.shipping?.awbCode) {
+    if (!order.shipping?.shipmentId) {
+      // Order was never confirmed through the flow above (e.g. jumped
+      // straight from pending to shipped) — create it now first.
+      try {
+        const srResponse = await shiprocket.createOrder(order);
+        order.shipping.shiprocketOrderId = srResponse.order_id;
+        order.shipping.shipmentId = srResponse.shipment_id;
+      } catch (err) {
+        console.error(`Shiprocket createOrder (late) failed for order ${order._id}:`, err.message);
+        order.shipping.lastError = `createOrder: ${err.message}`;
+      }
+    }
+
+    if (order.shipping?.shipmentId) {
+      try {
+        const awbResponse = await shiprocket.assignAWB({ shipmentId: order.shipping.shipmentId });
+        const data = awbResponse?.response?.data;
+        order.shipping.awbCode = data?.awb_code;
+        order.shipping.courierName = data?.courier_name;
+        order.shipping.lastError = undefined;
+      } catch (err) {
+        console.error(`Shiprocket assignAWB failed for order ${order._id}:`, err.message);
+        order.shipping.lastError = `assignAWB: ${err.message}`;
+      }
+    }
+  }
 
   await order.save();
 
@@ -289,4 +339,78 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
-module.exports = { createOrder, getMyOrders, getOrderById, cancelMyOrder, getAllOrders, updateOrderStatus };
+// @route POST /api/orders/:id/schedule-pickup  (admin only)
+const schedulePickup = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found.');
+  }
+  if (!order.shipping?.shipmentId) {
+    res.status(400);
+    throw new Error('This order has no Shiprocket shipment yet — confirm/ship it first.');
+  }
+
+  const result = await shiprocket.generatePickup([order.shipping.shipmentId]);
+  order.shipping.pickupScheduledDate = new Date();
+  await order.save();
+
+  res.json({ success: true, result, order });
+});
+
+// @route GET /api/orders/:id/label  (admin only)
+const getShippingLabel = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found.');
+  }
+  if (!order.shipping?.shipmentId) {
+    res.status(400);
+    throw new Error('This order has no Shiprocket shipment yet.');
+  }
+
+  const result = await shiprocket.generateLabel([order.shipping.shipmentId]);
+  const labelUrl = result?.label_url;
+  if (labelUrl) {
+    order.shipping.labelUrl = labelUrl;
+    await order.save();
+  }
+
+  res.json({ success: true, labelUrl, result });
+});
+
+// @route PUT /api/orders/:id/cancel-shipment  (admin only)
+// Cancels the Shiprocket shipment (only works before pickup) — distinct from
+// cancelMyOrder above, which is the customer-facing self-service version.
+const cancelShipment = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found.');
+  }
+  if (!order.shipping?.shiprocketOrderId) {
+    res.status(400);
+    throw new Error('This order has no Shiprocket shipment to cancel.');
+  }
+
+  const result = await shiprocket.cancelOrder([order.shipping.shiprocketOrderId]);
+
+  order.status = 'cancelled';
+  order.statusHistory.push({ status: 'cancelled', changedBy: req.user._id, changedAt: new Date() });
+  await order.save();
+
+  res.json({ success: true, result, order });
+});
+
+module.exports = {
+  createOrder,
+  getMyOrders,
+  getOrderById,
+  cancelMyOrder,
+  getAllOrders,
+  updateOrderStatus,
+  schedulePickup,
+  getShippingLabel,
+  cancelShipment
+};

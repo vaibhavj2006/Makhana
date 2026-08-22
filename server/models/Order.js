@@ -35,6 +35,21 @@ const statusHistoryEntrySchema = new mongoose.Schema(
   { _id: false }
 );
 
+const shiprocketShippingSchema = new mongoose.Schema(
+  {
+    shiprocketOrderId: { type: String },   // Shiprocket's internal order id
+    shipmentId: { type: String },          // used for AWB assignment / pickup / label
+    awbCode: { type: String },             // tracking number, set once courier assigned
+    courierName: { type: String },
+    trackingStatus: { type: String },      // last status string from webhook
+    labelUrl: { type: String },
+    invoiceUrl: { type: String },
+    pickupScheduledDate: { type: Date },
+    lastError: { type: String }            // if createOrder/assignAWB failed, stored here for admin visibility
+  },
+  { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -42,13 +57,9 @@ const orderSchema = new mongoose.Schema(
     shippingAddress: { type: shippingAddressSchema, required: true },
     paymentMethod: { type: String, enum: ['cod', 'card', 'upi', 'netbanking', 'wallet'], default: 'cod' },
 
-    // --- Idempotency & audit (was silently missing — orderController.js
-    // referenced these fields but they were never declared, so they were
-    // silently dropped on every save; retries were NOT actually deduped) ---
     idempotencyKey: { type: String, unique: true, sparse: true, index: true },
     statusHistory: { type: [statusHistoryEntrySchema], default: [] },
 
-    // --- Payment gateway tracking (Phase 2) ---
     paymentGateway: { type: String, enum: ['razorpay', null], default: null },
     gatewayOrderId: { type: String },
     gatewayPaymentId: { type: String },
@@ -58,11 +69,6 @@ const orderSchema = new mongoose.Schema(
       default: 'pending'
     },
 
-    // --- Stock reservation cleanup (Phase 3, item 7) ---
-    // Only set for online-payment orders (upi/card). Stock is decremented at
-    // order-creation time (see orderController.js), so if payment isn't
-    // completed by this deadline, releaseExpiredOrders.js cancels the order
-    // and restores stock.
     paymentDeadline: { type: Date },
 
     itemsPrice: { type: Number, required: true },
@@ -75,7 +81,9 @@ const orderSchema = new mongoose.Schema(
       enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
       default: 'pending'
     },
-    deliveredAt: { type: Date }
+    deliveredAt: { type: Date },
+
+    shipping: { type: shiprocketShippingSchema, default: () => ({}) }
   },
   { timestamps: true }
 );
